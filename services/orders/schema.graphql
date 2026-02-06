@@ -1,0 +1,94 @@
+type Order @key(fields: "id") {
+  id: ID!
+  user: User!
+  items: [OrderItem!]!
+  totalPrice: Money!
+  deliverySlot: DeliverySlot!
+  status: OrderStatus!
+  placedAt: String!
+  confirmedAt: String
+}
+
+type OrderItem {
+  id: ID!
+  boxTemplate: BoxTemplate
+  customSelections: [CustomSelection!]
+  finalPrice: Money!
+}
+
+type CustomSelection {
+  produceItem: ProduceItem!
+  quantity: Quantity!
+  linePrice: Money!
+}
+
+type DeliverySlot {
+  date: String!
+  slotType: SlotType!
+  cutoffTime: String!
+}
+
+type Money {
+  amount: Float!
+  currency: Currency!
+}
+
+type Quantity {
+  value: Float!
+  unit: Unit!
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  ASSIGNED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum SlotType {
+  SAME_DAY
+  NEXT_DAY
+}
+
+enum Currency {
+  KES
+}
+
+enum Unit {
+  kg
+  pcs
+  bunches
+}
+
+input PlaceOrderInput {
+  items: [OrderItemInput!]!
+  deliveryAddressId: ID!
+  preferredDeliveryDate: String!
+  isSubscription: Boolean!
+  subscriptionFrequency: SubscriptionFrequency
+}
+
+input OrderItemInput {
+  produceId: ID!
+  quantity: Float!
+  unit: Unit!
+}
+
+enum SubscriptionFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+type Mutation {
+  placeOrder(input: PlaceOrderInput!): Order!
+  confirmOrder(orderId: ID!): Order!
+  cancelOrder(orderId: ID!, reason: String!): Order!
+}
+
+type Query {
+  orders(userId: ID, status: OrderStatus): [Order!]!
+  order(id: ID!): Order
+}

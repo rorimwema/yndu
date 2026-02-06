@@ -1,0 +1,37 @@
+type User @key(fields: "id") {
+  id: ID!
+  email: String!
+  phone: String!
+  profile: UserProfile!
+  addresses: [Address!]!
+}
+
+type UserProfile {
+  firstName: String!
+  lastName: String!
+  preferredLanguage: String!
+}
+
+type Address {
+  id: ID!
+  label: String!
+  coordinates: GeoCoordinates!
+  zone: DeliveryZone!
+}
+
+type GeoCoordinates {
+  latitude: Float!
+  longitude: Float!
+}
+
+enum DeliveryZone {
+  KIBWEZI_CENTRAL
+  KIBWEZI_NORTH
+  NAIROBI_EAST
+  NAIROBI_WEST
+}
+
+type Query {
+  me: User!
+  user(id: ID!): User
+}

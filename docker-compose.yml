@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # GraphQL Gateway
+  gateway:
+    build: ./gateway
+    ports:
+      - "4000:4000"
+    environment:
+      - USER_SERVICE_URL=http://users:4001
+      - INVENTORY_SERVICE_URL=http://inventory:4002
+      - ORDER_SERVICE_URL=http://orders:4003
+    depends_on:
+      - users
+      - inventory
+      - orders
+
+  # Bounded Context: User Management (Deno)
+  users:
+    build:
+      context: .
+      dockerfile: Dockerfile.deno
+    ports:
+      - "4001:8000"
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=pass
+      - DATABASE_NAME=yndu
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=8000
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./src:/app/src
+    command: ["task", "dev"]
+
+  # Bounded Context: Inventory (Deno)
+  inventory:
+    build:
+      context: .
+      dockerfile: Dockerfile.deno
+    ports:
+      - "4002:8000"
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=pass
+      - DATABASE_NAME=yndu
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=8000
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./src:/app/src
+    command: ["run", "--allow-net", "--allow-read", "--allow-env", "src/main.ts"]
+
+  # Bounded Context: Ordering
+  orders:
+    build: ./services/orders
+    ports:
+      - "4003:4003"
+    environment:
+      - DATABASE_URL=postgres://postgres:pass@postgres:5432/orders
+      - EVENT_BUS_URL=redis://redis:6379
+      - PORT=4003
+    depends_on:
+      - postgres
+      - redis
+
+  # Shared Infrastructure
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/infrastructure/adapters/postgres/migrations:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=yndu
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Vue 3 Frontend
+  frontend:
+    build:
+      context: ./src/presentation
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_GRAPHQL_URL=http://localhost:4000/graphql
+    volumes:
+      - ./src/presentation:/app
+      - /app/node_modules
+    depends_on:
+      - gateway
+
+volumes:
+  postgres_data:
+  redis_data:

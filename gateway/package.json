@@ -1,0 +1,13 @@
+{
+  "name": "yndu-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@apollo/gateway": "^2.5.0",
+    "@apollo/server": "^4.9.0",
+    "graphql": "^16.8.0"
+  }
+}

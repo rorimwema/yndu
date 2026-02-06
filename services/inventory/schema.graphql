@@ -1,0 +1,78 @@
+type ProduceItem @key(fields: "id") {
+  id: ID!
+  name: String!
+  nameSw: String!
+  category: ProduceCategory!
+  unitPrice: Money!
+  availableQuantity: Quantity!
+  seasonality: Seasonality!
+  imageUrl: String
+}
+
+type BoxTemplate @key(fields: "id") {
+  id: ID!
+  name: String!
+  description: String!
+  size: BoxSize!
+  basePrice: Money!
+  maxWeight: Weight!
+  items: [BoxItem!]!
+  isCustomizable: Boolean!
+}
+
+type BoxItem {
+  produceItem: ProduceItem!
+  defaultQuantity: Quantity!
+  maxQuantity: Quantity!
+}
+
+type Money {
+  amount: Float!
+  currency: Currency!
+}
+
+type Quantity {
+  value: Float!
+  unit: Unit!
+}
+
+type Weight {
+  value: Float!
+  unit: String!
+}
+
+type Seasonality {
+  isSeasonal: Boolean!
+  seasonStart: String
+  seasonEnd: String
+}
+
+enum BoxSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ProduceCategory {
+  LEAFY_GREENS
+  ROOT_VEGETABLES
+  FRUITS
+  HERBS
+}
+
+enum Currency {
+  KES
+}
+
+enum Unit {
+  kg
+  pcs
+  bunches
+}
+
+type Query {
+  produceItems(category: ProduceCategory): [ProduceItem!]!
+  produceItem(id: ID!): ProduceItem
+  boxTemplates: [BoxTemplate!]!
+  boxTemplate(id: ID!): BoxTemplate
+}
