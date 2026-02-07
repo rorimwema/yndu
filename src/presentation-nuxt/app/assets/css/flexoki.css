@@ -1,0 +1,168 @@
+/* Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Flexoki Color System - Overridden with Vibrant Yndu Green */
+:root {
+  /* Base colors */
+  --flexoki-bg: #EDEECF;
+  /* Light greenish-yellow background */
+  --flexoki-primary: #66800b;
+  /* Flexoki olive green */
+  --flexoki-warning: #e67e22;
+  /* Earth Orange */
+
+  /* Extended Flexoki palette - Adjusted for new theme */
+  --flexoki-black: #111811;
+  --flexoki-paper: #ffffff;
+  --flexoki-50: #f0f4f0;
+  --flexoki-100: #e2e8e2;
+  --flexoki-150: #d4dcd4;
+  --flexoki-200: #dbe6db;
+  --flexoki-300: #a8b8a8;
+  --flexoki-400: #8aa08a;
+  --flexoki-500: #6c886c;
+  --flexoki-600: #546a54;
+  --flexoki-700: #3c4c3c;
+  --flexoki-800: #111811;
+  --flexoki-850: #182818;
+  --flexoki-900: #111811;
+  --flexoki-950: #102210;
+
+  /* Semantic colors */
+  --flexoki-red: #e67e22;
+  --flexoki-orange: #e67e22;
+  --flexoki-yellow: #f1c40f;
+  --flexoki-green: #66800b;
+  --flexoki-cyan: #1abc9c;
+  --flexoki-blue: #3498db;
+  --flexoki-purple: #9b59b6;
+  --flexoki-magenta: #e91e63;
+
+  /* Font configuration */
+  font-family: 'Inter', sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+}
+
+/* Variable font support */
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: 'Inter Variable', sans-serif;
+  }
+}
+
+/* Dark mode support - Disabled to maintain light beige theme */
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --flexoki-bg: #102210;
+    --flexoki-paper: #182818;
+    --flexoki-text: #f6f8f6;
+  }
+} */
+
+/* Utility classes for Flexoki colors */
+.bg-flexoki {
+  background-color: var(--flexoki-bg);
+}
+
+.bg-flexoki-primary {
+  background-color: var(--flexoki-primary);
+}
+
+.bg-flexoki-warning {
+  background-color: var(--flexoki-warning);
+}
+
+.bg-flexoki-paper {
+  background-color: var(--flexoki-paper);
+}
+
+.text-flexoki {
+  color: var(--flexoki-800);
+}
+
+.text-flexoki-primary {
+  color: var(--flexoki-primary);
+}
+
+.text-flexoki-warning {
+  color: var(--flexoki-warning);
+}
+
+.text-flexoki-muted {
+  color: var(--flexoki-500);
+}
+
+.border-flexoki {
+  border-color: var(--flexoki-200);
+}
+
+.border-flexoki-primary {
+  border-color: var(--flexoki-primary);
+}
+
+/* Component-specific styles */
+.btn-primary {
+  background-color: var(--flexoki-primary);
+  color: white;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: rgb(82, 102, 9);
+  transform: translateY(-1px);
+}
+
+.btn-warning {
+  background-color: var(--flexoki-warning);
+  color: white;
+  font-weight: 500;
+}
+
+.input-flexoki {
+  background-color: var(--flexoki-paper);
+  border: 1px solid var(--flexoki-200);
+  color: var(--flexoki-800);
+}
+
+.input-flexoki:focus {
+  border-color: var(--flexoki-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 128, 11, 0.1);
+}
+
+/* Card styles */
+.card-flexoki {
+  background-color: var(--flexoki-paper);
+  border: 1px solid var(--flexoki-200);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Typography enhancements */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--flexoki-900);
+}
+
+body {
+  background-color: var(--flexoki-bg);
+  color: var(--flexoki-800);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection colors */
+::selection {
+  background-color: rgba(102, 128, 11, 0.2);
+  color: var(--flexoki-900);
+}
