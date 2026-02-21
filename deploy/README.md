@@ -13,8 +13,13 @@ SSH into your VPS and run the setup script:
 curl -O https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/deploy/vps-setup.sh
 chmod +x vps-setup.sh
 
-# Run the setup (replace with your domain and email)
-sudo DOMAIN=yourdomain.com EMAIL=admin@yourdomain.com ./vps-setup.sh
+# Run the setup (replace with your domain)
+sudo ./vps-setup.sh \
+  --domain yourdomain.com \
+  --repo https://github.com/rorimwema/yndu.git \
+  --tag latest \
+  --cert /root/cert.pem \
+  --key /root/key.pem
 ```
 
 ### 2. Configure GitHub Secrets
@@ -53,19 +58,23 @@ cd /opt/yndu
 ./manual-deploy.sh --tag v1.2.3
 ```
 
-### Method 3: Direct Docker Compose
+### Method 3: Docker Swarm (Production)
 
 ```bash
 cd /opt/yndu
 
-# Build and start all services
-docker compose -f docker-compose.production.yml up -d
+# Create/update secrets from secrets/prod
+./scripts/swarm/create-secrets.sh
+
+# Deploy stack
+export REGISTRY=ghcr.io/rorimwema
+export IMAGE_NAME=yndu
+export TAG=latest
+export CORS_ORIGIN=https://yourdomain.com
+docker stack deploy -c docker-stack.yml yndu
 
 # View logs
-docker compose -f docker-compose.production.yml logs -f
-
-# Stop services
-docker compose -f docker-compose.production.yml down
+docker service logs -f yndu_nginx
 ```
 
 ---
