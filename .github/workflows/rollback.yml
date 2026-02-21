@@ -55,12 +55,12 @@ jobs:
             cd $DEPLOY_PATH
             
             echo "Pulling previous images..."
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/users:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/users:latest
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:latest
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:latest
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:latest
+            sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
+            sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
+            sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/users:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/users:latest
+            sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:latest
+            sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:latest
+            sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:latest
             
             echo "Creating rollback override..."
             cat > docker-compose.rollback.yml << COMPOSE
@@ -82,7 +82,7 @@ jobs:
           COMPOSE
             
             echo "Applying rollback..."
-            docker compose -f docker-compose.production.yml -f docker-compose.rollback.yml up -d
+            sudo docker compose -f docker-compose.production.yml -f docker-compose.rollback.yml up -d
             
             echo "Rollback completed to version: $VERSION"
           EOF

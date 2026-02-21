@@ -1,7 +1,9 @@
 name: CD - Deploy to VPS
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI - Build and Test"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -14,6 +16,10 @@ on:
           - production
           - staging
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -23,7 +29,7 @@ jobs:
     name: Deploy to VPS
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'production' }}
-    needs: []
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success') }}
     
     steps:
       - name: Checkout code

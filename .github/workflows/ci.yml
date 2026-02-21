@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -43,7 +47,6 @@ jobs:
 
       - name: Run unit tests
         run: deno task test:unit
-        continue-on-error: true
 
   # Frontend (Nuxt) checks
   frontend-checks:
@@ -66,9 +69,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linter (type check)
+      - name: Run linter
+        run: npm run lint --if-present
+
+      - name: Run type check
         run: npx nuxt typecheck
-        continue-on-error: true
 
       - name: Build frontend
         run: npm run build
@@ -99,7 +104,6 @@ jobs:
 
       - name: Run syntax check
         run: node --check src/index.js
-        continue-on-error: true
 
   # Build and push Docker images
   build-images:
@@ -175,7 +179,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.19.0
         with:
           image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}'
           format: 'sarif'
