@@ -1,5 +1,5 @@
 // Error handler middleware
-import type { Context, Middleware } from "../deps.ts";
+import type { Middleware } from "../deps.ts";
 
 class AppError extends Error {
   constructor(
