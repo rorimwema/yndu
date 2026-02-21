@@ -1,0 +1,103 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version/Tag to rollback to (e.g., v1.2.3 or commit SHA)'
+        required: true
+        type: string
+      environment:
+        description: 'Environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  rollback:
+    name: Rollback to Previous Version
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Add VPS to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Execute Rollback
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/opt/yndu' }}
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          echo "Rolling back to version: $VERSION"
+          
+          ssh $VPS_USER@$VPS_HOST << EOF
+            cd $DEPLOY_PATH
+            
+            echo "Pulling previous images..."
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/users:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/users:latest
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:latest
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:latest
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:$VERSION || docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:latest
+            
+            echo "Creating rollback override..."
+            cat > docker-compose.rollback.yml << COMPOSE
+          name: yndu_rollback
+          
+          services:
+            backend:
+              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:$VERSION
+            frontend:
+              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:$VERSION
+            users:
+              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/users:$VERSION
+            inventory:
+              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:$VERSION
+            orders:
+              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:$VERSION
+            gateway:
+              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:$VERSION
+          COMPOSE
+            
+            echo "Applying rollback..."
+            docker compose -f docker-compose.production.yml -f docker-compose.rollback.yml up -d
+            
+            echo "Rollback completed to version: $VERSION"
+          EOF
+
+      - name: Verify Rollback
+        run: |
+          sleep 10
+          
+          # Check health endpoints
+          if ssh $VPS_USER@$VPS_HOST "curl -sf http://localhost:8000/health"; then
+            echo "✓ Backend is healthy after rollback"
+          else
+            echo "⚠ Backend health check failed after rollback"
+          fi
+
+      - name: Notify Rollback Status
+        run: |
+          echo "Rollback to ${{ github.event.inputs.version }} completed"

@@ -1,0 +1,36 @@
+# Staging Environment Configuration
+# Usage: docker compose -f docker-compose.production.yml -f docker-compose.staging.yml up -d
+
+name: yndu_staging
+
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: yndu_staging
+    ports:
+      - "5434:5432"
+
+  redis:
+    ports:
+      - "6381:6379"
+
+  backend:
+    environment:
+      DATABASE_NAME: yndu_staging
+      CORS_ORIGIN: "https://staging.yourdomain.com"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  frontend:
+    environment:
+      NODE_ENV: staging
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  nginx:
+    ports:
+      - "8081:80"

@@ -1,0 +1,199 @@
+name: CD - Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    needs: []
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Add VPS to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/opt/yndu' }}
+          DOMAIN: ${{ secrets.DOMAIN }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Starting deployment to $VPS_HOST..."
+          
+          # Create deployment script
+          cat > deploy.sh << 'EOF'
+          #!/bin/bash
+          set -e
+
+          DEPLOY_PATH="${1:-/opt/yndu}"
+          DOMAIN="${2:-localhost}"
+          REGISTRY_TOKEN="${3}"
+          REGISTRY="ghcr.io"
+          IMAGE_NAME="${4}"
+          COMMIT_SHA="${5}"
+
+          echo "=== YNDU Deployment Script ==="
+          echo "Deploy path: $DEPLOY_PATH"
+          echo "Domain: $DOMAIN"
+          echo "Commit: $COMMIT_SHA"
+
+          # Ensure deploy directory exists
+          sudo mkdir -p $DEPLOY_PATH
+          cd $DEPLOY_PATH
+
+          # Login to GitHub Container Registry
+          echo "Logging into container registry..."
+          echo "$REGISTRY_TOKEN" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+          # Pull latest images
+          echo "Pulling latest images..."
+          sudo docker pull $REGISTRY/$IMAGE_NAME/backend:$COMMIT_SHA || sudo docker pull $REGISTRY/$IMAGE_NAME/backend:latest
+          sudo docker pull $REGISTRY/$IMAGE_NAME/frontend:$COMMIT_SHA || sudo docker pull $REGISTRY/$IMAGE_NAME/frontend:latest
+          sudo docker pull $REGISTRY/$IMAGE_NAME/users:$COMMIT_SHA || sudo docker pull $REGISTRY/$IMAGE_NAME/users:latest
+          sudo docker pull $REGISTRY/$IMAGE_NAME/inventory:$COMMIT_SHA || sudo docker pull $REGISTRY/$IMAGE_NAME/inventory:latest
+          sudo docker pull $REGISTRY/$IMAGE_NAME/orders:$COMMIT_SHA || sudo docker pull $REGISTRY/$IMAGE_NAME/orders:latest
+          sudo docker pull $REGISTRY/$IMAGE_NAME/gateway:$COMMIT_SHA || sudo docker pull $REGISTRY/$IMAGE_NAME/gateway:latest
+
+          # Create/update docker-compose override for production
+          cat > docker-compose.prod.override.yml << COMPOSE
+          name: yndu_production
+
+          services:
+            backend:
+              image: $REGISTRY/$IMAGE_NAME/backend:$COMMIT_SHA
+              restart: always
+              deploy:
+                resources:
+                  limits:
+                    memory: 512M
+                  reservations:
+                    memory: 256M
+
+            frontend:
+              image: $REGISTRY/$IMAGE_NAME/frontend:$COMMIT_SHA
+              restart: always
+              deploy:
+                resources:
+                  limits:
+                    memory: 512M
+                  reservations:
+                    memory: 256M
+
+            users:
+              image: $REGISTRY/$IMAGE_NAME/users:$COMMIT_SHA
+              restart: always
+
+            inventory:
+              image: $REGISTRY/$IMAGE_NAME/inventory:$COMMIT_SHA
+              restart: always
+
+            orders:
+              image: $REGISTRY/$IMAGE_NAME/orders:$COMMIT_SHA
+              restart: always
+
+            gateway:
+              image: $REGISTRY/$IMAGE_NAME/gateway:$COMMIT_SHA
+              restart: always
+
+            nginx:
+              restart: always
+              volumes:
+                - ./nginx/ssl:/etc/nginx/ssl:ro
+                - ./nginx/production-ssl.conf:/etc/nginx/conf.d/default.conf:ro
+          COMPOSE
+
+          # Deploy with zero downtime
+          echo "Deploying services..."
+          sudo docker compose -f docker-compose.production.yml -f docker-compose.prod.override.yml pull
+          sudo docker compose -f docker-compose.production.yml -f docker-compose.prod.override.yml up -d --remove-orphans
+
+          # Cleanup old images
+          echo "Cleaning up old images..."
+          sudo docker image prune -af --filter "until=168h" || true
+
+          # Health check
+          echo "Running health checks..."
+          sleep 10
+          
+          # Check backend health
+          if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+            echo "✓ Backend is healthy"
+          else
+            echo "✗ Backend health check failed"
+            exit 1
+          fi
+
+          # Check frontend
+          if curl -sf http://localhost:3000 > /dev/null 2>&1; then
+            echo "✓ Frontend is healthy"
+          else
+            echo "✗ Frontend health check failed"
+            exit 1
+          fi
+
+          echo "=== Deployment Complete ==="
+          echo "Application deployed at: https://$DOMAIN"
+          EOF
+
+          chmod +x deploy.sh
+
+          # Copy deployment files to VPS
+          echo "Copying deployment files..."
+          rsync -avz --progress \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.nuxt' \
+            --exclude='.output' \
+            ./docker-compose.production.yml \
+            ./nginx/ \
+            ./deploy.sh \
+            $VPS_USER@$VPS_HOST:$DEPLOY_PATH/
+
+          # Execute deployment on VPS
+          echo "Executing remote deployment..."
+          ssh $VPS_USER@$VPS_HOST "
+            cd $DEPLOY_PATH && \
+            bash deploy.sh $DEPLOY_PATH $DOMAIN $REGISTRY_TOKEN $IMAGE_NAME ${{ github.sha }}
+          "
+
+          echo "Deployment completed successfully!"
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Deployment to ${{ secrets.VPS_HOST }} successful!"
+          echo "URL: https://${{ secrets.DOMAIN }}"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment to ${{ secrets.VPS_HOST }} failed!"

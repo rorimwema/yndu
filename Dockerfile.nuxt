@@ -1,0 +1,36 @@
+# Build stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY src/presentation-nuxt/package.json src/presentation-nuxt/package-lock.json ./
+RUN npm ci && npm cache clean --force
+
+# Copy source and build
+COPY src/presentation-nuxt/ ./
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+ENV NODE_ENV=production
+ENV NITRO_HOST=0.0.0.0
+ENV NITRO_PORT=3000
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
+# Copy only the output
+COPY --from=builder --chown=nodejs:nodejs /app/.output ./.output
+
+USER nodejs
+
+EXPOSE 3000
+
+CMD ["node", ".output/server/index.mjs"]
