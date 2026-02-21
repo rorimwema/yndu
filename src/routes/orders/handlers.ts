@@ -1,18 +1,18 @@
 // Order route handlers
-import type { Context } from "../../deps.ts";
-import { getContainer } from "../../infrastructure/container.ts";
-import { mapErrorToHttpStatus, Result } from "../../shared/Result.ts";
-import { PlaceOrderCommand } from "../../application/commands/PlaceOrderCommand.ts";
-import { Quantity } from "../../domain/value-objects/Quantity.ts";
-import { UserId, AddressId, ProduceItemId } from "../../domain/value-objects/branded.ts";
+import type { Context } from '../../deps.ts';
+import { getContainer } from '../../infrastructure/container.ts';
+import { mapErrorToHttpStatus, Result as _Result } from '../../shared/Result.ts';
+import { PlaceOrderCommand } from '../../application/commands/PlaceOrderCommand.ts';
+import { Quantity } from '../../domain/value-objects/Quantity.ts';
+import { AddressId, ProduceItemId, UserId } from '../../domain/value-objects/branded.ts';
 
 export async function getOrders(ctx: Context) {
   try {
     const url = new URL(ctx.request.url);
-    const userId = url.searchParams.get("userId");
-    const status = url.searchParams.get("status");
-    const limit = parseInt(url.searchParams.get("limit") || "20");
-    const offset = parseInt(url.searchParams.get("offset") || "0");
+    const userId = url.searchParams.get('userId');
+    const status = url.searchParams.get('status');
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
 
     const container = getContainer();
     const result = await container.getUserOrdersHandler.execute({
@@ -29,7 +29,7 @@ export async function getOrders(ctx: Context) {
     }
 
     ctx.response.body = {
-      orders: result.getValue().map(order => ({
+      orders: result.getValue().map((order) => ({
         id: order.id,
         userId: order.userId,
         status: order.status,
@@ -41,7 +41,7 @@ export async function getOrders(ctx: Context) {
     };
   } catch (_error) {
     ctx.response.status = 500;
-    ctx.response.body = { error: "Failed to fetch orders" };
+    ctx.response.body = { error: 'Failed to fetch orders' };
   }
 }
 
@@ -50,11 +50,11 @@ export async function getOrderById(ctx: Context) {
     const id = ctx.params.id;
 
     const container = getContainer();
-    const result = await container.orderRepository.findById(id as any);
+    const result = await container.orderRepository.findById(id as string);
 
     if (!result) {
       ctx.response.status = 404;
-      ctx.response.body = { error: "Order not found" };
+      ctx.response.body = { error: 'Order not found' };
       return;
     }
 
@@ -65,7 +65,7 @@ export async function getOrderById(ctx: Context) {
         status: result.status,
         totalPrice: result.totalPrice.toDTO(),
         deliverySlot: result.deliverySlot.toDTO(),
-        items: result.items.map(item => ({
+        items: result.items.map((item) => ({
           produceId: item.produceId,
           quantity: item.quantity.toDTO(),
           linePrice: item.linePrice.toDTO(),
@@ -74,17 +74,17 @@ export async function getOrderById(ctx: Context) {
     };
   } catch (_error) {
     ctx.response.status = 500;
-    ctx.response.body = { error: "Failed to fetch order" };
+    ctx.response.body = { error: 'Failed to fetch order' };
   }
 }
 
 export async function createOrder(ctx: Context) {
   try {
     const body = ctx.state.validatedBody;
-    
+
     const command: PlaceOrderCommand = {
       userId: body.userId as UserId,
-      items: body.items.map((item: any) => ({
+      items: body.items.map((item: Record<string, unknown>) => ({
         produceId: item.produceId as ProduceItemId,
         quantity: Quantity.kilograms(item.quantity),
       })),
@@ -99,7 +99,7 @@ export async function createOrder(ctx: Context) {
 
     if (result.isFailure()) {
       ctx.response.status = mapErrorToHttpStatus(result.getError());
-      ctx.response.body = { 
+      ctx.response.body = {
         error: result.getError().message,
         code: result.getError().code,
       };
@@ -119,7 +119,7 @@ export async function createOrder(ctx: Context) {
   } catch (_error) {
     console.error('Create order error:', _error);
     ctx.response.status = 500;
-    ctx.response.body = { error: "Failed to create order" };
+    ctx.response.body = { error: 'Failed to create order' };
   }
 }
 
@@ -129,11 +129,11 @@ export async function updateOrderStatus(ctx: Context) {
     const body = await ctx.request.body.json();
 
     const container = getContainer();
-    const order = await container.orderRepository.findById(id as any);
+    const order = await container.orderRepository.findById(id as string);
 
     if (!order) {
       ctx.response.status = 404;
-      ctx.response.body = { error: "Order not found" };
+      ctx.response.body = { error: 'Order not found' };
       return;
     }
 
@@ -149,7 +149,7 @@ export async function updateOrderStatus(ctx: Context) {
       case 'ASSIGNED':
         if (!riderId) {
           ctx.response.status = 400;
-          ctx.response.body = { error: "riderId required for assignment" };
+          ctx.response.body = { error: 'riderId required for assignment' };
           return;
         }
         order.assignRider(riderId);
@@ -178,6 +178,6 @@ export async function updateOrderStatus(ctx: Context) {
   } catch (_error) {
     console.error('Update order status error:', _error);
     ctx.response.status = 500;
-    ctx.response.body = { error: "Failed to update order status" };
+    ctx.response.body = { error: 'Failed to update order status' };
   }
 }

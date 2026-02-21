@@ -1,6 +1,6 @@
-import { DomainEvent, EventMetadata } from '../DomainEvent';
-import { Quantity } from '../../value-objects/Quantity';
-import { ProduceItemId } from '../../value-objects/branded';
+import { DomainEvent, EventMetadata } from './DomainEvent.ts';
+import { Quantity } from '../value-objects/Quantity.ts';
+import { ProduceItemId as _ProduceItemId } from '../value-objects/branded.ts';
 
 export class StockDecremented extends DomainEvent {
   constructor(
@@ -8,7 +8,7 @@ export class StockDecremented extends DomainEvent {
     version: number,
     readonly quantity: Quantity,
     readonly reason: string,
-    metadata?: EventMetadata
+    metadata?: EventMetadata,
   ) {
     super(aggregateId, version, metadata);
   }
@@ -20,7 +20,7 @@ export class StockIncremented extends DomainEvent {
     version: number,
     readonly quantity: Quantity,
     readonly reason: string,
-    metadata?: EventMetadata
+    metadata?: EventMetadata,
   ) {
     super(aggregateId, version, metadata);
   }
@@ -32,7 +32,7 @@ export class StockLow extends DomainEvent {
     version: number,
     readonly availableQuantity: Quantity,
     readonly threshold: Quantity,
-    metadata?: EventMetadata
+    metadata?: EventMetadata,
   ) {
     super(aggregateId, version, metadata);
   }
@@ -45,7 +45,7 @@ export class ProduceItemSeasonalityChanged extends DomainEvent {
     readonly isSeasonal: boolean,
     readonly seasonStart?: Date,
     readonly seasonEnd?: Date,
-    metadata?: EventMetadata
+    metadata?: EventMetadata,
   ) {
     super(aggregateId, version, metadata);
   }

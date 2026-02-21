@@ -1,23 +1,18 @@
 // Orders routes
-import { OakRouter } from "../../deps.ts";
-import {
-  getOrders,
-  getOrderById,
-  createOrder,
-  updateOrderStatus,
-} from "./handlers.ts";
-import { validateCreateOrder } from "./validators.ts";
+import { Router } from '../../deps.ts';
+import { createOrder, getOrderById, getOrders, updateOrderStatus } from './handlers.ts';
+import { validateCreateOrder } from './validators.ts';
 
-export const ordersRouter = new OakRouter();
+export const ordersRouter = new Router();
 
 // GET /api/orders
-ordersRouter.get("/", getOrders);
+ordersRouter.get('/', getOrders);
 
 // GET /api/orders/:id
-ordersRouter.get("/:id", getOrderById);
+ordersRouter.get('/:id', getOrderById);
 
 // POST /api/orders
-ordersRouter.post("/", validateCreateOrder, createOrder);
+ordersRouter.post('/', validateCreateOrder, createOrder);
 
 // PUT /api/orders/:id/status
-ordersRouter.put("/:id/status", updateOrderStatus);
+ordersRouter.put('/:id/status', updateOrderStatus);

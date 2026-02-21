@@ -11,8 +11,13 @@
     "test:integration": "deno task test:integration",
     "lint": "deno task lint",
     "fmt": "deno task fmt",
-    "docker:up": "docker-compose up -d postgres redis",
-    "docker:down": "docker-compose down"
+    "docker:up": "docker compose up -d postgres redis",
+    "docker:down": "docker compose down",
+    "swarm:init": "docker swarm init",
+    "swarm:deploy": "docker stack deploy -c docker-stack.yml yndu",
+    "swarm:rm": "docker stack rm yndu",
+    "swarm:services": "docker stack services yndu",
+    "swarm:ps": "docker stack ps yndu"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.4.0",

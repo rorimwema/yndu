@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import * as LucideIcons from 'lucide-vue-next';
+import type { Component } from 'vue';
 
 interface Props {
   number: string;
-  icon: string;
+  icon: Component;
   title: string;
   description: string;
 }
 
-const props = defineProps<Props>();
-const IconComponent = (LucideIcons as any)[props.icon];
+defineProps<Props>();
 </script>
 
 <template>
   <div class="text-center">
-    <div class="size-16 bg-white dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border border-flexoki">
-      <component :is="IconComponent" :size="32" class="text-flexoki-primary" />
+    <div class="size-16 bg-white dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border border-neutral-200">
+      <component :is="icon" :size="32" class="text-primary-deep" />
     </div>
-    <h5 class="font-bold text-lg mb-2 text-flexoki">{{ number }}. {{ title }}</h5>
-    <p class="text-sm text-flexoki-muted max-w-xs mx-auto">{{ description }}</p>
+    <h5 class="font-bold text-lg mb-2 text-foundation">{{ number }}. {{ title }}</h5>
+    <p class="text-sm text-neutral-400 max-w-xs mx-auto">{{ description }}</p>
   </div>
 </template>

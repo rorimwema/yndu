@@ -1,12 +1,12 @@
-import { Money } from '../../value-objects/Money';
-import { Quantity } from '../../value-objects/Quantity';
-import { ProduceItemId } from '../../value-objects/branded';
+import { Money } from '../../value-objects/Money.ts';
+import { Quantity } from '../../value-objects/Quantity.ts';
+import { ProduceItemId } from '../../value-objects/branded.ts';
 
 export class OrderItem {
   constructor(
     readonly produceId: ProduceItemId,
     readonly quantity: Quantity,
-    readonly linePrice: Money
+    readonly linePrice: Money,
   ) {}
 
   get weight(): number {

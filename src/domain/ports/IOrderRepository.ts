@@ -1,5 +1,5 @@
-import { Order } from '../aggregates/Order/Order';
-import { OrderId } from '../value-objects/branded';
+import { Order } from '../aggregates/Order/Order.ts';
+import { OrderId } from '../value-objects/branded.ts';
 
 export interface IOrderRepository {
   save(order: Order): Promise<void>;

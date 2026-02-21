@@ -19,7 +19,8 @@ sudo DOMAIN=yourdomain.com EMAIL=admin@yourdomain.com ./vps-setup.sh
 
 ### 2. Configure GitHub Secrets
 
-Follow the instructions in [github-secrets-setup.md](github-secrets-setup.md) to set up required secrets.
+Follow the instructions in [github-secrets-setup.md](github-secrets-setup.md) to set up required
+secrets.
 
 ### 3. Deploy
 
@@ -106,11 +107,13 @@ SSL certificates are automatically managed by Let's Encrypt:
 ## Monitoring & Maintenance
 
 ### View Service Status
+
 ```bash
 /opt/yndu/monitor.sh
 ```
 
 ### View Logs
+
 ```bash
 # All services
 docker compose -f docker-compose.production.yml logs -f
@@ -120,6 +123,7 @@ docker compose -f docker-compose.production.yml logs -f backend
 ```
 
 ### Backup Database
+
 ```bash
 # Manual backup
 /opt/yndu/backup.sh
@@ -129,6 +133,7 @@ docker compose -f docker-compose.production.yml logs -f backend
 ```
 
 ### Update Services
+
 ```bash
 # Pull latest images and restart
 docker compose -f docker-compose.production.yml pull
@@ -136,6 +141,7 @@ docker compose -f docker-compose.production.yml up -d
 ```
 
 ### Restart Services
+
 ```bash
 # Restart all
 docker compose -f docker-compose.production.yml restart
@@ -149,6 +155,7 @@ docker compose -f docker-compose.production.yml restart backend
 ## Troubleshooting
 
 ### Services Not Starting
+
 ```bash
 # Check logs
 docker compose -f docker-compose.production.yml logs
@@ -161,6 +168,7 @@ docker stats --no-stream
 ```
 
 ### Database Connection Issues
+
 ```bash
 # Check if database is running
 docker compose -f docker-compose.production.yml ps postgres
@@ -170,6 +178,7 @@ docker compose -f docker-compose.production.yml exec postgres psql -U postgres -
 ```
 
 ### SSL Certificate Issues
+
 ```bash
 # Check certificate status
 sudo certbot certificates
@@ -184,6 +193,7 @@ docker compose -f docker-compose.production.yml restart nginx
 ```
 
 ### Out of Memory
+
 ```bash
 # Check memory usage
 free -h
@@ -215,20 +225,21 @@ docker volume prune -f
 
 Required environment variables in `.env.production`:
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_PASSWORD` | PostgreSQL password | Yes |
-| `REDIS_PASSWORD` | Redis password | Yes |
-| `JWT_SECRET` | JWT signing secret | Yes |
-| `NUXT_SESSION_PASSWORD` | Session encryption key | Yes |
-| `HASHPAY_API_KEY` | Payment provider API key | No |
-| `HASHPAY_ACCOUNT_ID` | Payment provider account ID | No |
+| Variable                | Description                 | Required |
+| ----------------------- | --------------------------- | -------- |
+| `DATABASE_PASSWORD`     | PostgreSQL password         | Yes      |
+| `REDIS_PASSWORD`        | Redis password              | Yes      |
+| `JWT_SECRET`            | JWT signing secret          | Yes      |
+| `NUXT_SESSION_PASSWORD` | Session encryption key      | Yes      |
+| `HASHPAY_API_KEY`       | Payment provider API key    | No       |
+| `HASHPAY_ACCOUNT_ID`    | Payment provider account ID | No       |
 
 ---
 
 ## Support
 
 For issues or questions:
+
 1. Check the troubleshooting section above
 2. Review GitHub Actions logs
 3. Check VPS logs: `journalctl -u yndu.service`

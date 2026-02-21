@@ -1,0 +1,38 @@
+# Yndu Project Rules & Governance
+
+You are working on **Yndu**, a fresh produce delivery platform using a strict hexagonal architecture.
+Adhere to the following rules at all times.
+
+## 1. Technology Stack
+- **Backend Runtime**: Deno (not Node.js) for all services in `src/`.
+- **Frontend**: Nuxt 4 (Vue 3 + TypeScript).
+- **API**: GraphQL Federation via Apollo Gateway. DO NOT create REST endpoints unless explicitly instructed.
+- **Database**: PostgreSQL with `deno-postgres`. Use `knex` for migrations only.
+- **State**: Redis for session/cache.
+
+## 2. Architectural Integrity (Hexagonal)
+- **Dependency Rule**: Inner layers (Domain) MUST NOT depend on outer layers (Infrastructure/Presentation).
+- **Domain Layer (`src/domain/`)**:
+  - Pure TypeScript classes.
+  - NO external imports (including Deno std lib, unless absolutely necessary for types).
+  - NO framework code (Oak, Zod, etc.) inside Aggregates.
+- **Infrastructure Layer (`src/infrastructure/`)**:
+  - Implements interfaces defined in `domain/ports/`.
+  - This is the ONLY place where Database/IO code lives.
+
+## 3. Deployment & Runtime
+- **Deno**: Use `deno.json` tasks. Do not use `npm` or `yarn` for backend code.
+- **Nuxt**: Use `npm run dev` for frontend only.
+
+## 4. Coding Standards
+- **Validation**: Use **Zod** for all DTOs and input validation at the edge (Presentation Layer).
+- **Error Handling**: Use the `Result` monad pattern. Do not throw exceptions for predictable business errors.
+- **Type Safety**: No `any`. Strict TypeScript always.
+
+## 5. Critical Files
+- `core.md`: The source of truth for architecture. READ THIS if you are unsure.
+- `src/deps.ts`: All backend dependencies must be exported here. DD NOT import directly from URLs in other files.
+
+## 6. Agent Behavior
+- **Proactive**: If you see code violating these rules, flag it or refactor it.
+- **Context**: Always check `core.md` before suggesting major architectural changes.

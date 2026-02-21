@@ -8,16 +8,16 @@ services:
     environment:
       POSTGRES_DB: yndu_staging
     ports:
-      - "5434:5432"
+      - '5434:5432'
 
   redis:
     ports:
-      - "6381:6379"
+      - '6381:6379'
 
   backend:
     environment:
       DATABASE_NAME: yndu_staging
-      CORS_ORIGIN: "https://staging.yourdomain.com"
+      CORS_ORIGIN: 'https://staging.yourdomain.com'
     deploy:
       resources:
         limits:
@@ -33,4 +33,4 @@ services:
 
   nginx:
     ports:
-      - "8081:80"
+      - '8081:80'

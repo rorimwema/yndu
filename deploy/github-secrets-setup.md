@@ -7,8 +7,10 @@ This document explains how to set up the required GitHub secrets for the CI/CD p
 Go to your GitHub repository → Settings → Secrets and variables → Actions → New repository secret
 
 ### 1. VPS_SSH_KEY
-**Type:** SSH Private Key  
+
+**Type:** SSH Private Key\
 **How to get it:**
+
 ```bash
 # Generate a new SSH key pair (on your local machine or CI server)
 ssh-keygen -t ed25519 -C "github-actions@yndu" -f ~/.ssh/github_actions
@@ -16,33 +18,41 @@ ssh-keygen -t ed25519 -C "github-actions@yndu" -f ~/.ssh/github_actions
 # Copy the private key
 cat ~/.ssh/github_actions
 ```
-Paste the entire content including `-----BEGIN OPENSSH PRIVATE KEY-----` and `-----END OPENSSH PRIVATE KEY-----`.
+
+Paste the entire content including `-----BEGIN OPENSSH PRIVATE KEY-----` and
+`-----END OPENSSH PRIVATE KEY-----`.
 
 Then add the public key to your VPS authorized_keys:
+
 ```bash
 # On your VPS
 cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
 ```
 
 ### 2. VPS_HOST
-**Type:** String  
+
+**Type:** String\
 **Value:** Your VPS IP address or domain (e.g., `203.0.113.1` or `vps.yourdomain.com`)
 
 ### 3. VPS_USER
-**Type:** String  
+
+**Type:** String\
 **Value:** The SSH username for your VPS (e.g., `root`, `ubuntu`, `deploy`)
 
 ### 4. DOMAIN
-**Type:** String  
+
+**Type:** String\
 **Value:** Your domain name (e.g., `api.yourdomain.com` or `yourdomain.com`)
 
 ### 5. DEPLOY_PATH (Optional)
-**Type:** String  
-**Value:** The path where the application will be deployed on the VPS  
+
+**Type:** String\
+**Value:** The path where the application will be deployed on the VPS\
 **Default:** `/opt/yndu`
 
 ### 6. GITHUB_TOKEN
-**Type:** Automatically provided by GitHub  
+
+**Type:** Automatically provided by GitHub\
 **Note:** This is automatically available in workflows, no need to set manually.
 
 ---
@@ -50,11 +60,13 @@ cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
 ## Optional Secrets for Notifications
 
 ### 7. SLACK_WEBHOOK_URL (Optional)
-**Type:** URL  
+
+**Type:** URL\
 **Purpose:** Send deployment notifications to Slack
 
 ### 8. DISCORD_WEBHOOK_URL (Optional)
-**Type:** URL  
+
+**Type:** URL\
 **Purpose:** Send deployment notifications to Discord
 
 ---
@@ -64,6 +76,7 @@ cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
 Go to Settings → Secrets and variables → Actions → Variables tab
 
 ### REGISTRY
+
 **Value:** `ghcr.io` (GitHub Container Registry)
 
 ---
@@ -109,15 +122,18 @@ If this works, the GitHub Actions should be able to connect too.
 ## Troubleshooting
 
 ### Permission Denied (publickey)
+
 - Check that the public key is in `~/.ssh/authorized_keys` on the VPS
 - Ensure the `.ssh` directory has correct permissions: `chmod 700 ~/.ssh`
 - Ensure `authorized_keys` has correct permissions: `chmod 600 ~/.ssh/authorized_keys`
 
 ### Connection Timeout
+
 - Check that your VPS firewall allows SSH (port 22)
 - Verify the VPS_HOST is correct
 - Check if your VPS provider blocks port 22
 
 ### Docker Login Failed
+
 - Ensure the GitHub token has `packages:write` permission
 - Check that the repository is public or token has proper access

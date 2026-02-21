@@ -1,5 +1,5 @@
-import { OrderStatus } from '../../domain/aggregates/Order/Order';
-import { UserId } from '../../domain/value-objects/branded';
+import { OrderStatus } from '../../domain/aggregates/Order/Order.ts';
+import { UserId } from '../../domain/value-objects/branded.ts';
 
 export interface GetUserOrdersQuery {
   userId: UserId;

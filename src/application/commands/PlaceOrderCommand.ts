@@ -1,5 +1,5 @@
-import { UserId, AddressId, ProduceItemId } from '../../domain/value-objects/branded';
-import { Quantity } from '../../domain/value-objects/Quantity';
+import { AddressId, ProduceItemId, UserId } from '../../domain/value-objects/branded.ts';
+import { Quantity } from '../../domain/value-objects/Quantity.ts';
 
 export interface OrderItemCommand {
   produceId: ProduceItemId;

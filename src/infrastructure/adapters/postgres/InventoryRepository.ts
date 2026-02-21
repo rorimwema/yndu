@@ -1,11 +1,24 @@
-import { IInventoryRepository } from '../../../domain/ports/IInventoryRepository';
-import { ProduceItem, ProduceCategory } from '../../../domain/aggregates/ProduceItem/ProduceItem';
-import { ProduceItemId } from '../../../domain/value-objects/branded';
-import { Money } from '../../../domain/value-objects/Money';
-import { Quantity } from '../../../domain/value-objects/Quantity';
+import { IInventoryRepository } from '../../../domain/ports/IInventoryRepository.ts';
+import {
+  ProduceCategory,
+  ProduceItem,
+} from '../../../domain/aggregates/ProduceItem/ProduceItem.ts';
+import { ProduceItemId } from '../../../domain/value-objects/branded.ts';
+import { Money } from '../../../domain/value-objects/Money.ts';
+import { Quantity } from '../../../domain/value-objects/Quantity.ts';
+
+interface KnexDB {
+  (table: string): KnexDB;
+  where: (...args: unknown[]) => KnexDB;
+  whereIn: (column: string, values: unknown[]) => KnexDB;
+  first: () => Promise<Record<string, unknown> | undefined>;
+  insert: (data: Record<string, unknown>) => KnexDB;
+  onConflict: (column: string) => { merge: () => Promise<void> };
+  update: (data: Record<string, unknown>) => Promise<void>;
+}
 
 export class PostgresInventoryRepository implements IInventoryRepository {
-  constructor(private db: any) {}
+  constructor(private db: KnexDB) {}
 
   async save(item: ProduceItem): Promise<void> {
     await this.db('produce_items')
@@ -35,26 +48,49 @@ export class PostgresInventoryRepository implements IInventoryRepository {
       .where('category', category)
       .where('is_active', true);
 
-    return rows.map((row: any) => this.fromRow(row));
+    return rows.map((row: Record<string, unknown>) => this.fromRow(row));
   }
 
   async findAll(): Promise<ProduceItem[]> {
     const rows = await this.db('produce_items').where('is_active', true);
-    return rows.map((row: any) => this.fromRow(row));
+    return rows.map((row: Record<string, unknown>) => this.fromRow(row));
   }
 
-  private fromRow(row: any): ProduceItem {
+  async findByIds(ids: string[]): Promise<ProduceItem[]> {
+    if (!ids.length) return [];
+    const rows = await this.db('produce_items')
+      .whereIn('id', ids)
+      .where('is_active', true);
+    return rows.map((row: Record<string, unknown>) => this.fromRow(row));
+  }
+
+  async updateQuantity(id: ProduceItemId, quantity: number): Promise<void> {
+    await this.db('produce_items')
+      .where('id', id)
+      .update({ available_quantity: quantity, updated_at: new Date() });
+  }
+
+  async deactivate(id: ProduceItemId): Promise<void> {
+    await this.db('produce_items')
+      .where('id', id)
+      .update({ is_active: false, updated_at: new Date() });
+  }
+
+  private fromRow(row: Record<string, unknown>): ProduceItem {
+    const seasonStart = row.season_start ? new Date(row.season_start) : undefined;
+    const seasonEnd = row.season_end ? new Date(row.season_end) : undefined;
+
     return new ProduceItem({
       id: row.id as ProduceItemId,
       name: row.name,
       nameSw: row.name_sw,
       category: row.category as ProduceCategory,
       unitPrice: Money.fromCents(row.unit_price_cents),
-      availableQuantity: new Quantity(row.available_quantity, row.unit),
-      reorderThreshold: new Quantity(row.reorder_threshold, row.unit),
-      isSeasonal: row.is_seasonal,
-      seasonStart: row.season_start ? new Date(row.season_start) : undefined,
-      seasonEnd: row.season_end ? new Date(row.season_end) : undefined,
+      availableQuantity: Quantity.kilograms(row.available_quantity),
+      reorderThreshold: Quantity.kilograms(row.reorder_threshold || 0),
+      isSeasonal: row.is_seasonal || false,
+      seasonStart: seasonStart ?? undefined,
+      seasonEnd: seasonEnd ?? undefined,
       imageUrl: row.image_url,
     });
   }

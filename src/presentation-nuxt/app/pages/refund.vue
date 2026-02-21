@@ -1,0 +1,1 @@
+<template><div class="pt-24 min-h-screen"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"><h1 class="text-3xl font-bold capitalize">refund</h1><p class="mt-4 text-neutral-600">Page coming soon.</p></div></div></template>

@@ -25,7 +25,7 @@ jobs:
     name: Rollback to Previous Version
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,10 +50,10 @@ jobs:
           VERSION: ${{ github.event.inputs.version }}
         run: |
           echo "Rolling back to version: $VERSION"
-          
+
           ssh $VPS_USER@$VPS_HOST << EOF
             cd $DEPLOY_PATH
-            
+
             echo "Pulling previous images..."
             sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
             sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
@@ -61,11 +61,11 @@ jobs:
             sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/inventory:latest
             sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/orders:latest
             sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:$VERSION || sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:latest
-            
+
             echo "Creating rollback override..."
             cat > docker-compose.rollback.yml << COMPOSE
           name: yndu_rollback
-          
+
           services:
             backend:
               image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:$VERSION
@@ -80,17 +80,17 @@ jobs:
             gateway:
               image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:$VERSION
           COMPOSE
-            
+
             echo "Applying rollback..."
             sudo docker compose -f docker-compose.production.yml -f docker-compose.rollback.yml up -d
-            
+
             echo "Rollback completed to version: $VERSION"
           EOF
 
       - name: Verify Rollback
         run: |
           sleep 10
-          
+
           # Check health endpoints
           if ssh $VPS_USER@$VPS_HOST "curl -sf http://localhost:8000/health"; then
             echo "✓ Backend is healthy after rollback"

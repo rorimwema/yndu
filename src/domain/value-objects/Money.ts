@@ -1,9 +1,9 @@
-import { KES } from './branded';
+import { KES } from './branded.ts';
 
 export class Money {
   private constructor(
     readonly amount: KES,
-    readonly currency: 'KES' = 'KES'
+    readonly currency: 'KES' = 'KES',
   ) {}
 
   static fromCents(cents: number): Money {
@@ -35,5 +35,12 @@ export class Money {
 
   equals(other: Money): boolean {
     return this.amount === other.amount && this.currency === other.currency;
+  }
+
+  toDTO(): { amount: number; currency: string } {
+    return {
+      amount: this.amount,
+      currency: this.currency,
+    };
   }
 }

@@ -4,35 +4,36 @@
 
 ### GitHub Actions Workflows (`.github/workflows/`)
 
-| File | Purpose | Trigger |
-|------|---------|---------|
-| `ci.yml` | Lint, test, build, push images | Push to any branch, PR |
-| `deploy.yml` | Deploy to VPS | Push to main, Manual |
-| `rollback.yml` | Rollback to previous version | Manual |
+| File           | Purpose                        | Trigger                |
+| -------------- | ------------------------------ | ---------------------- |
+| `ci.yml`       | Lint, test, build, push images | Push to any branch, PR |
+| `deploy.yml`   | Deploy to VPS                  | Push to main, Manual   |
+| `rollback.yml` | Rollback to previous version   | Manual                 |
 
 ### Deployment Scripts (`deploy/`)
 
-| File | Purpose | Location |
-|------|---------|----------|
-| `vps-setup.sh` | One-time VPS setup | Run on VPS |
-| `manual-deploy.sh` | Manual deployment | Run on VPS |
-| `github-secrets-setup.md` | Secrets documentation | Reference |
-| `README.md` | Deployment guide | Reference |
-| `docker-compose.staging.yml` | Staging environment | Override |
+| File                         | Purpose               | Location   |
+| ---------------------------- | --------------------- | ---------- |
+| `vps-setup.sh`               | One-time VPS setup    | Run on VPS |
+| `manual-deploy.sh`           | Manual deployment     | Run on VPS |
+| `github-secrets-setup.md`    | Secrets documentation | Reference  |
+| `README.md`                  | Deployment guide      | Reference  |
+| `docker-compose.staging.yml` | Staging environment   | Override   |
 
 ### Configuration Files
 
-| File | Purpose |
-|------|---------|
-| `.env.production.example` | Production env template |
-| `nginx/production-ssl.conf` | HTTPS nginx config |
-| `docker-compose.production.yml` | Production services |
+| File                            | Purpose                 |
+| ------------------------------- | ----------------------- |
+| `.env.production.example`       | Production env template |
+| `nginx/production-ssl.conf`     | HTTPS nginx config      |
+| `docker-compose.production.yml` | Production services     |
 
 ---
 
 ## 📋 Setup Checklist
 
 ### Step 1: VPS Setup (One-time)
+
 ```bash
 # SSH into your VPS
 ssh root@your-vps-ip
@@ -44,17 +45,19 @@ sudo DOMAIN=yourdomain.com EMAIL=admin@yourdomain.com ./vps-setup.sh
 ```
 
 ### Step 2: GitHub Secrets
+
 Go to **Settings → Secrets and variables → Actions**
 
-| Secret | Value Example |
-|--------|---------------|
+| Secret        | Value Example                            |
+| ------------- | ---------------------------------------- |
 | `VPS_SSH_KEY` | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
-| `VPS_HOST` | `203.0.113.1` or `vps.yourdomain.com` |
-| `VPS_USER` | `root` or `ubuntu` |
-| `DOMAIN` | `app.yourdomain.com` |
-| `DEPLOY_PATH` | `/opt/yndu` |
+| `VPS_HOST`    | `203.0.113.1` or `vps.yourdomain.com`    |
+| `VPS_USER`    | `root` or `ubuntu`                       |
+| `DOMAIN`      | `app.yourdomain.com`                     |
+| `DEPLOY_PATH` | `/opt/yndu`                              |
 
 ### Step 3: Push & Deploy
+
 ```bash
 git add .
 git commit -m "Add CI/CD pipeline"
@@ -163,6 +166,7 @@ Internal:
 ## 🛠️ Common Commands
 
 ### View Status
+
 ```bash
 # On VPS
 /opt/yndu/monitor.sh
@@ -173,6 +177,7 @@ docker stats --no-stream
 ```
 
 ### View Logs
+
 ```bash
 # All services
 docker compose -f docker-compose.production.yml logs -f
@@ -182,17 +187,20 @@ docker compose -f docker-compose.production.yml logs -f backend
 ```
 
 ### Manual Deploy
+
 ```bash
 cd /opt/yndu
 ./manual-deploy.sh --tag v1.2.3
 ```
 
 ### Backup Database
+
 ```bash
 /opt/yndu/backup.sh
 ```
 
 ### Restart Services
+
 ```bash
 # All
 docker compose -f docker-compose.production.yml restart
@@ -219,6 +227,7 @@ docker compose -f docker-compose.production.yml restart backend
 ## 🚨 Troubleshooting
 
 ### Deployment Failed
+
 ```bash
 # Check GitHub Actions logs
 # Actions tab → Failed workflow
@@ -228,6 +237,7 @@ ssh root@your-vps-ip "cd /opt/yndu && docker compose logs --tail=50"
 ```
 
 ### Health Check Failing
+
 ```bash
 # Test locally on VPS
 curl http://localhost:8000/health
@@ -238,6 +248,7 @@ docker compose -f docker-compose.production.yml logs backend
 ```
 
 ### SSL Issues
+
 ```bash
 # Renew certificate
 sudo certbot renew --force-renewal
@@ -270,25 +281,25 @@ docker compose -f docker-compose.production.yml restart nginx
 
 ## 📚 Documentation
 
-| File | Purpose |
-|------|---------|
-| `CICD_SETUP.md` | Complete setup guide |
-| `deploy/README.md` | VPS deployment guide |
+| File                             | Purpose               |
+| -------------------------------- | --------------------- |
+| `CICD_SETUP.md`                  | Complete setup guide  |
+| `deploy/README.md`               | VPS deployment guide  |
 | `deploy/github-secrets-setup.md` | Secrets configuration |
-| `.env.production.example` | Environment template |
+| `.env.production.example`        | Environment template  |
 
 ---
 
 ## 🎯 Features
 
-✅ **Automated CI/CD** - Push to deploy  
-✅ **Zero-downtime deployment** - Rolling updates  
-✅ **SSL/TLS** - Automatic Let's Encrypt  
-✅ **Health checks** - Automatic verification  
-✅ **Rollback** - One-click rollback  
-✅ **Monitoring** - Resource usage tracking  
-✅ **Backups** - Automated database backups  
-✅ **Security** - Non-root containers, secrets management  
+✅ **Automated CI/CD** - Push to deploy\
+✅ **Zero-downtime deployment** - Rolling updates\
+✅ **SSL/TLS** - Automatic Let's Encrypt\
+✅ **Health checks** - Automatic verification\
+✅ **Rollback** - One-click rollback\
+✅ **Monitoring** - Resource usage tracking\
+✅ **Backups** - Automated database backups\
+✅ **Security** - Non-root containers, secrets management
 
 ---
 

@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { motion } from 'motion-v';
 import { Check, Plus } from 'lucide-vue-next';
-import { useCartStore } from '../stores/cartStore';
+import { useCartStore } from '../stores/cart-store';
 
 interface Props {
   id: string;
@@ -50,14 +50,12 @@ const handleAddToCart = () => {
 <template>
   <component
     :is="motion.div"
-    class="group p-4 hover:shadow-xl transition-all duration-300 relative bg-flexoki dark:bg-zinc-800 rounded-xl border border-flexoki-200"
-    :class="{ 'ring-2 ring-flexoki-primary': variant === 'popular' }"
+    class="group p-5 relative bg-white dark:bg-zinc-800 rounded border border-secondary-sage/20 transition-all duration-200 ease-in-out hover:border-secondary-sage hover:scale-[1.01] hover:shadow-lg"
+    :class="{ 'ring-2 ring-primary-deep': variant === 'popular' }"
     :initial="{ opacity: 0, y: 20 }"
     :while-in-view="{ opacity: 1, y: 0 }"
     :viewport="{ once: true, margin: '-50px' }"
     :transition="{ duration: 0.4, ease: 'easeOut' }"
-    :while-hover="{ y: -8, scale: 1.02 }"
-    :while-press="{ scale: 0.98 }"
   >
     <!-- Added Indicator -->
     <Transition
@@ -70,7 +68,7 @@ const handleAddToCart = () => {
     >
       <div 
         v-if="isJustAdded"
-        class="absolute -top-2 -right-2 z-20 bg-flexoki-primary text-white p-2 rounded-full shadow-lg"
+        class="absolute -top-2 -right-2 z-20 bg-secondary-sage text-white p-2 rounded-full shadow-lg"
       >
         <Check :size="20" />
       </div>
@@ -78,23 +76,26 @@ const handleAddToCart = () => {
 
     <!-- Badge -->
     <div v-if="badge" class="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-      <span class="bg-flexoki-warning text-white px-4 py-1 rounded-full text-xs font-black uppercase shadow-lg">
+      <span class="bg-accent-clay text-white px-4 py-1 rounded-sm text-xs font-semibold uppercase shadow-lg tracking-wide">
         {{ badge }}
       </span>
     </div>
 
-    <!-- Image -->
-    <div class="aspect-square rounded-lg overflow-hidden mb-4 bg-flexoki-paper relative">
-      <img 
+    <!-- Image & Badge Container -->
+    <div class="aspect-square rounded overflow-hidden mb-4 bg-neutral-50 relative">
+      <NuxtImg 
         :src="image" 
         :alt="imageAlt"
-        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         loading="lazy"
+        format="webp"
+        sizes="sm:100vw md:50vw lg:33vw"
       />
+      
       <!-- In Cart Indicator -->
       <div 
         v-if="isInCart"
-        class="absolute top-2 right-2 bg-flexoki-primary text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+        class="absolute top-2 right-2 bg-primary-deep text-white px-2 py-1 rounded-sm text-xs font-medium flex items-center gap-1 shadow-md z-10"
       >
         <Check :size="12" />
         In Cart
@@ -103,25 +104,25 @@ const handleAddToCart = () => {
 
     <!-- Content -->
     <div class="flex justify-between items-start mb-2">
-      <h4 class="font-bold text-lg text-flexoki">{{ title }}</h4>
-      <span class="text-flexoki-primary font-black">KSh {{ price.toLocaleString() }}</span>
+      <h4 class="font-serif text-lg text-primary-deep">{{ title }}</h4>
+      <span class="text-accent-clay font-semibold">KSh {{ price.toLocaleString() }}</span>
     </div>
     
-    <p class="text-sm text-flexoki-muted mb-6 line-clamp-2">{{ description }}</p>
+    <p class="text-sm text-neutral-400 mb-6 line-clamp-2">{{ description }}</p>
     
     <!-- Button -->
     <component
       :is="motion.button"
       @click="handleAddToCart"
-      class="w-full py-4 sm:py-3 rounded-xl sm:rounded-lg font-bold transition-all flex items-center justify-center gap-2 min-h-[48px]"
+      class="w-full py-3 rounded font-medium transition-all duration-200 ease-in-out flex items-center justify-center gap-2 min-h-[48px]"
       :class="[
         variant === 'popular' 
-          ? 'bg-flexoki-primary text-flexoki-900 border-none' 
-          : 'bg-flexoki-primary/20 hover:bg-flexoki-primary text-flexoki-900',
-        isJustAdded ? 'bg-flexoki-primary text-flexoki-900' : ''
+          ? 'bg-accent-clay text-white border-none hover:bg-primary-deep' 
+          : 'bg-primary-deep/10 hover:bg-accent-clay text-primary-deep hover:text-white',
+        isJustAdded ? 'bg-secondary-sage text-white' : ''
       ]"
-      :while-hover="{ scale: 1.03 }"
-      :while-press="{ scale: 0.97 }"
+      :while-hover="{ scale: 1.02 }"
+      :while-press="{ scale: 0.98 }"
       :transition="{ type: 'spring', stiffness: 400, damping: 15 }"
       :disabled="isJustAdded as boolean"
     >
@@ -142,7 +143,7 @@ const handleAddToCart = () => {
 <style scoped>
 .v-enter-active,
 .v-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .v-enter-from,

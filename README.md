@@ -17,7 +17,9 @@
 
 ## Overview
 
-Yndu is a production-ready fresh produce delivery system built with modern architectural patterns and technologies. It enables customers to order customizable produce boxes, subscribe to recurring deliveries, and track their orders in real-time.
+Yndu is a production-ready fresh produce delivery system built with modern architectural patterns
+and technologies. It enables customers to order customizable produce boxes, subscribe to recurring
+deliveries, and track their orders in real-time.
 
 ### Key Features
 
@@ -95,19 +97,19 @@ Yndu is a production-ready fresh produce delivery system built with modern archi
 
 ### Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | Vue 3 + TypeScript | Reactive UI with Composition API |
-| **Animations** | Motion Vue (motion-v) | Hardware-accelerated animations |
-| **State** | Pinia | Type-safe state management |
-| **Gateway** | Apollo Federation | GraphQL schema composition |
-| **Runtime** | Deno 1.41+ | Secure TypeScript runtime |
-| **Framework** | Oak | Web framework (Express alternative) |
-| **Validation** | Zod | Schema validation |
-| **Database** | PostgreSQL 16 | ACID-compliant data storage |
-| **Cache** | Redis 7 | Event bus and session cache |
-| **Testing** | Deno Test | Built-in test runner |
-| **Container** | Docker | Service orchestration |
+| Layer           | Technology                                   | Purpose                             |
+| --------------- | -------------------------------------------- | ----------------------------------- |
+| **Frontend**    | Vue 3 + TypeScript                           | Reactive UI with Composition API    |
+| **Animations**  | Motion Vue (motion-v)                        | Hardware-accelerated animations     |
+| **State**       | Pinia                                        | Type-safe state management          |
+| **GraphQL API** | Oak GraphQL runtime (+ federation contracts) | Typed query/mutation endpoint       |
+| **Runtime**     | Deno 1.41+                                   | Secure TypeScript runtime           |
+| **Framework**   | Oak                                          | Web framework (Express alternative) |
+| **Validation**  | Zod                                          | Schema validation                   |
+| **Database**    | PostgreSQL 17                                | ACID-compliant data storage         |
+| **Cache**       | Redis 7                                      | Event bus and session cache         |
+| **Testing**     | Deno Test                                    | Built-in test runner                |
+| **Container**   | Docker                                       | Service orchestration               |
 
 ---
 
@@ -131,23 +133,26 @@ cp .env.example .env
 
 # Edit .env with your configuration
 nano .env  # or use your preferred editor
+
+# Bootstrap Docker secret files (local)
+cp -R secrets.example secrets
 ```
 
 ### 2. Start Infrastructure
 
 ```bash
 # Start PostgreSQL, Redis, and all services
-docker-compose up -d postgres redis
+docker compose up -d postgres redis
 
 # Verify services are running
-docker-compose ps
+docker compose ps
 ```
 
 ### 3. Database Setup
 
 ```bash
 # Run enhanced schema migrations
-docker-compose exec postgres psql -U postgres -d yndu -f /docker-entrypoint-initdb.d/002_enhanced_schema.sql
+docker compose exec postgres psql -U postgres -d yndu -f /docker-entrypoint-initdb.d/002_enhanced_schema.sql
 
 # Or manually:
 psql -h localhost -U postgres -d yndu -f src/infrastructure/adapters/postgres/migrations/002_enhanced_schema.sql
@@ -181,12 +186,13 @@ npm run dev
 
 ### 6. Access Application
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| Frontend | http://localhost:3000 | Vue 3 Application |
-| API | http://localhost:8000 | Deno REST API |
-| Health | http://localhost:8000/health | Health check |
-| GraphQL | http://localhost:4000/graphql | Federation Gateway |
+| Service                  | URL                           | Description               |
+| ------------------------ | ----------------------------- | ------------------------- |
+| Frontend                 | http://localhost:3000         | Vue 3 Application         |
+| API                      | http://localhost:8000         | Deno REST API             |
+| Health                   | http://localhost:8000/health  | Health check              |
+| GraphQL Gateway          | http://localhost:4000/graphql | Apollo Federation gateway |
+| GraphQL Backend (direct) | http://localhost:8000/graphql | Backend GraphQL endpoint  |
 
 ---
 
@@ -228,7 +234,8 @@ deno task compile
 ```
 yndu/
 ├── deno.json                          # Deno configuration & tasks
-├── docker-compose.yml                 # Service orchestration
+├── docker-compose.yml                 # Local development orchestration
+├── docker-stack.yml                   # Swarm production stack
 ├── Dockerfile.deno                    # Production Docker image
 ├── .env.example                       # Environment template
 │
@@ -328,16 +335,16 @@ yndu/
 
 Applied `database-schema-design` skill for enterprise-grade database:
 
-| Feature | Implementation |
-|---------|----------------|
-| **Tables** | 18 tables (users, orders, produce_items, subscriptions, riders, etc.) |
-| **Indexes** | 60+ optimized indexes including GIN, GiST, Partial |
-| **Constraints** | 30+ CHECK constraints for data integrity |
-| **Partitioning** | Monthly partitions for domain_events |
-| **Audit** | created_at, updated_at, created_by, updated_by on all tables |
-| **Soft Delete** | deleted_at pattern with partial unique indexes |
-| **Versioning** | Optimistic locking with version column |
-| **Money** | INTEGER (cents) - no floating-point errors |
+| Feature          | Implementation                                                        |
+| ---------------- | --------------------------------------------------------------------- |
+| **Tables**       | 18 tables (users, orders, produce_items, subscriptions, riders, etc.) |
+| **Indexes**      | 60+ optimized indexes including GIN, GiST, Partial                    |
+| **Constraints**  | 30+ CHECK constraints for data integrity                              |
+| **Partitioning** | Monthly partitions for domain_events                                  |
+| **Audit**        | created_at, updated_at, created_by, updated_by on all tables          |
+| **Soft Delete**  | deleted_at pattern with partial unique indexes                        |
+| **Versioning**   | Optimistic locking with version column                                |
+| **Money**        | INTEGER (cents) - no floating-point errors                            |
 
 ### Key Tables
 
@@ -379,16 +386,16 @@ See `SCHEMA_ENHANCEMENTS.md` for complete details.
 
 ### REST Endpoints (Deno/Oak)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check |
-| `GET` | `/health/ready` | Readiness probe |
-| `GET` | `/api/orders` | List orders (with filters) |
-| `GET` | `/api/orders/:id` | Get order by ID |
-| `POST` | `/api/orders` | Create new order |
-| `PUT` | `/api/orders/:id/status` | Update order status |
-| `GET` | `/api/inventory` | List produce items |
-| `GET` | `/api/users/me` | Get current user |
+| Method | Endpoint                 | Description                |
+| ------ | ------------------------ | -------------------------- |
+| `GET`  | `/health`                | Health check               |
+| `GET`  | `/health/ready`          | Readiness probe            |
+| `GET`  | `/api/orders`            | List orders (with filters) |
+| `GET`  | `/api/orders/:id`        | Get order by ID            |
+| `POST` | `/api/orders`            | Create new order           |
+| `PUT`  | `/api/orders/:id/status` | Update order status        |
+| `GET`  | `/api/inventory`         | List produce items         |
+| `GET`  | `/api/users/me`          | Get current user           |
 
 ### Example Request
 
@@ -408,30 +415,38 @@ curl -X POST http://localhost:8000/api/orders \
   }'
 ```
 
-### GraphQL Federation
+### GraphQL Federation (Current Runtime)
 
 ```graphql
-# Get user with orders
+# Example query
 query {
-  me {
+  produceItems {
     id
-    email
-    profile {
-      firstName
-      lastName
+    name
+    category
+    unitPrice {
+      amount
+      currency
     }
-    orders {
-      id
-      status
-      totalPrice
-      deliverySlot {
-        date
-        type
-      }
+  }
+
+  orders(userId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", limit: 10) {
+    id
+    status
+    totalPrice {
+      amount
+      currency
+    }
+    deliverySlot {
+      date
+      slotType
     }
   }
 }
 ```
+
+Federation SDL contracts are available under `services/*/schema.graphql`. Executable subgraph
+servers and gateway composition are planned next.
 
 ---
 
@@ -464,16 +479,16 @@ const orderStore = useOrderStore()
 
 ```typescript
 // useBoxBuilder - Build custom produce boxes
-const { 
-  selections, 
-  currentWeight, 
+const {
+  selections,
+  currentWeight,
   currentPrice,
   canAddItem,
-  addItem 
-} = useBoxBuilder('MEDIUM', inventory)
+  addItem,
+} = useBoxBuilder('MEDIUM', inventory);
 
 // useDeliverySlot - Manage delivery scheduling
-const { slotType, deliveryDisplay, setDate } = useDeliverySlot()
+const { slotType, deliveryDisplay, setDate } = useDeliverySlot();
 ```
 
 ---
@@ -497,13 +512,13 @@ deno test tests/unit/money_test.ts
 
 ```typescript
 // tests/unit/money_test.ts
-import { assertEquals } from "../deps.ts";
-import { Money } from "../../src/domain/value-objects/branded.ts";
+import { assertEquals } from '../deps.ts';
+import { Money } from '../../src/domain/value-objects/branded.ts';
 
-Deno.test("Money.fromCents should create money from cents", () => {
+Deno.test('Money.fromCents should create money from cents', () => {
   const money = Money.fromCents(5000);
   assertEquals(money.amount, 5000);
-  assertEquals(money.currency, "KES");
+  assertEquals(money.currency, 'KES');
 });
 ```
 
@@ -521,7 +536,43 @@ deno task test:integration
 
 ## Deployment
 
-### Docker
+### Docker Swarm (Production Standard)
+
+Use `docker-stack.yml` for production deployment with encrypted Swarm secrets.
+
+```bash
+# 1) Initialize swarm (once per manager)
+docker swarm init
+
+# 2) Create secrets (example)
+docker secret create yndu_postgres_password secrets/prod/postgres_password.txt
+docker secret create yndu_database_password secrets/prod/database_password.txt
+docker secret create yndu_redis_password secrets/prod/redis_password.txt
+docker secret create yndu_jwt_secret secrets/prod/jwt_secret.txt
+docker secret create yndu_hashpay_api_key secrets/prod/hashpay_api_key.txt
+docker secret create yndu_hashpay_account_id secrets/prod/hashpay_account_id.txt
+docker secret create yndu_nuxt_session_password secrets/prod/nuxt_session_password.txt
+
+# 3) Deploy stack
+export REGISTRY=ghcr.io/<your-org-or-user>
+export IMAGE_NAME=yndu
+export TAG=latest
+export CORS_ORIGIN=https://your-domain.example
+docker stack deploy -c docker-stack.yml yndu
+```
+
+Operations:
+
+```bash
+docker stack services yndu
+docker stack ps yndu
+docker service logs -f yndu_nginx
+docker stack rm yndu
+```
+
+Full runbook: `.agents/docker.md`.
+
+### Docker Compose (Local Dev Only)
 
 ```bash
 # Build production image
@@ -530,8 +581,8 @@ docker build -f Dockerfile.deno -t yndu:latest .
 # Run with environment
 docker run -p 8000:8000 --env-file .env yndu:latest
 
-# Or use docker-compose
-docker-compose up -d
+# Local stack for development
+docker compose up -d
 ```
 
 ### Compile to Binary
@@ -575,7 +626,9 @@ CORS_ORIGIN=https://yndu.co.ke
 This project leverages three specialized agent skills:
 
 ### 1. database-schema-design ✅
+
 Production-grade PostgreSQL schema with:
+
 - 3NF normalization
 - CHECK constraints
 - Partitioning
@@ -583,14 +636,18 @@ Production-grade PostgreSQL schema with:
 - Audit trails
 
 ### 2. motion ✅
+
 Vue animations with Motion Vue:
+
 - Declarative animations
 - Gesture support
 - Scroll effects
 - Spring physics
 
 ### 3. deno-typescript ✅
+
 Deno runtime integration:
+
 - Native TypeScript
 - Built-in tooling
 - Permission-based security
@@ -601,8 +658,10 @@ Deno runtime integration:
 ## Documentation
 
 - **[DENO_SETUP.md](DENO_SETUP.md)** - Deno configuration and migration guide
-- **[SCHEMA_ENHANCEMENTS.md](src/infrastructure/adapters/postgres/SCHEMA_ENHANCEMENTS.md)** - Database schema details
-- **[MIGRATION_GUIDE.md](src/infrastructure/adapters/postgres/MIGRATION_GUIDE.md)** - Database migration steps
+- **[SCHEMA_ENHANCEMENTS.md](src/infrastructure/adapters/postgres/SCHEMA_ENHANCEMENTS.md)** -
+  Database schema details
+- **[MIGRATION_GUIDE.md](src/infrastructure/adapters/postgres/MIGRATION_GUIDE.md)** - Database
+  migration steps
 - **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Complete project overview
 
 ---

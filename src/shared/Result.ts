@@ -17,12 +17,12 @@ export class Result<T, E> {
   }
 
   getValue(): T {
-    if (!this.success) throw new Error("Cannot get value from failed result");
+    if (!this.success) throw new Error('Cannot get value from failed result');
     return this.value!;
   }
 
   getError(): E {
-    if (this.success) throw new Error("Cannot get error from successful result");
+    if (this.success) throw new Error('Cannot get error from successful result');
     return this.error!;
   }
 
@@ -49,7 +49,7 @@ export abstract class DomainError extends Error {
     readonly code: string,
   ) {
     super(message);
-    this.name = "DomainError";
+    this.name = 'DomainError';
   }
 }
 
@@ -61,7 +61,23 @@ export class InsufficientStockError extends DomainError {
   ) {
     super(
       `Insufficient stock for ${produceId}. Requested: ${requested}, Available: ${available}`,
-      "INVENTORY.INSUFFICIENT_STOCK",
+      'INVENTORY.INSUFFICIENT_STOCK',
     );
+  }
+}
+
+export function mapErrorToHttpStatus(error: DomainError): number {
+  switch (error.code) {
+    case 'USER.NOT_FOUND':
+    case 'ORDER.NOT_FOUND':
+    case 'ADDRESS.NOT_FOUND':
+    case 'INVENTORY.ITEM_NOT_FOUND':
+      return 404;
+    case 'INVENTORY.INSUFFICIENT_STOCK':
+      return 409;
+    case 'VALIDATION.ERROR':
+      return 400;
+    default:
+      return 500;
   }
 }

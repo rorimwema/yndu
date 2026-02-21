@@ -1,5 +1,5 @@
 // Request logger middleware
-import type { Middleware } from "../deps.ts";
+import type { Middleware } from '../deps.ts';
 
 export const requestLogger: Middleware = async (ctx, next) => {
   const start = performance.now();

@@ -1,4 +1,4 @@
-import { DomainEvent } from '../events/DomainEvent';
+import { DomainEvent } from '../events/DomainEvent.ts';
 
 export interface IEventPublisher {
   publish(event: DomainEvent): Promise<void>;

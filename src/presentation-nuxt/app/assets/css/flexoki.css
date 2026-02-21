@@ -3,166 +3,562 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Flexoki Color System - Overridden with Vibrant Yndu Green */
+/* ═══════════════════════════════════════════════════════════════════════════
+   AGTECH PRESTIGE DESIGN SYSTEM
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 :root {
-  /* Base colors */
-  --flexoki-bg: #EDEECF;
-  /* Light greenish-yellow background */
-  --flexoki-primary: #66800b;
-  /* Flexoki olive green */
-  --flexoki-warning: #e67e22;
-  /* Earth Orange */
+  /* ── Colors: AgTech Prestige Palette ── */
+  --bg-canvas: #f0eee9;
+  /* Cloud Dancer: Warm off-white */
+  --text-main: #101417;
+  /* Obsidian Soil: Deep neutral */
+  --primary-deep: #2d4746;
+  /* Deep Spruce: Technical/Reliable */
+  --secondary-sage: #9caf88;
+  /* Silver Sage: Fresh/Organic */
+  --accent-clay: #b36d4f;
+  /* Burnished Clay: Action/CTA */
 
-  /* Extended Flexoki palette - Adjusted for new theme */
-  --flexoki-black: #111811;
-  --flexoki-paper: #ffffff;
-  --flexoki-50: #f0f4f0;
-  --flexoki-100: #e2e8e2;
-  --flexoki-150: #d4dcd4;
-  --flexoki-200: #dbe6db;
-  --flexoki-300: #a8b8a8;
-  --flexoki-400: #8aa08a;
-  --flexoki-500: #6c886c;
-  --flexoki-600: #546a54;
-  --flexoki-700: #3c4c3c;
-  --flexoki-800: #111811;
-  --flexoki-850: #182818;
-  --flexoki-900: #111811;
-  --flexoki-950: #102210;
+  /* Extended neutrals */
+  --neutral-50: #f5f4f0;
+  --neutral-100: #e8e6e1;
+  --neutral-200: #d5d2cc;
+  --neutral-300: #b8b4ad;
+  --neutral-400: #8a867f;
+  --neutral-500: #6b6860;
+  --neutral-600: #4a4843;
+  --neutral-700: #2e2d2a;
+  --neutral-800: #1d1c1a;
+  --neutral-900: #101417;
 
-  /* Semantic colors */
-  --flexoki-red: #e67e22;
-  --flexoki-orange: #e67e22;
-  --flexoki-yellow: #f1c40f;
-  --flexoki-green: #66800b;
-  --flexoki-cyan: #1abc9c;
-  --flexoki-blue: #3498db;
-  --flexoki-purple: #9b59b6;
-  --flexoki-magenta: #e91e63;
+  /* Semantic colors for shadcn/ui compatibility */
+  --background: 40 10% 93%;
+  --foreground: 210 16% 7%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 16% 7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 16% 7%;
+  --primary: 179 23% 23%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 100 18% 61%;
+  --secondary-foreground: 210 16% 7%;
+  --muted: 40 10% 90%;
+  --muted-foreground: 40 5% 40%;
+  --accent: 18 38% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 40 8% 82%;
+  --input: 40 8% 82%;
+  --ring: 179 23% 23%;
+  --radius: 4px;
+
+  /* ── Typography ── */
+  --font-header: 'Instrument Serif', serif;
+  --font-ui: 'Instrument Sans', sans-serif;
+
+  /* ── Spacing & Borders ── */
+  --space-unit: 8px;
+  --radius-pro: 4px;
+  --transition-smooth: 200ms ease-in-out;
 
   /* Font configuration */
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-ui);
   font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 /* Variable font support */
 @supports (font-variation-settings: normal) {
   :root {
-    font-family: 'Inter Variable', sans-serif;
+    font-family: 'Instrument Sans Variable', var(--font-ui);
   }
 }
 
-/* Dark mode support - Disabled to maintain light beige theme */
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --flexoki-bg: #102210;
-    --flexoki-paper: #182818;
-    --flexoki-text: #f6f8f6;
-  }
-} */
-
-/* Utility classes for Flexoki colors */
-.bg-flexoki {
-  background-color: var(--flexoki-bg);
+/* Dark mode support */
+.dark {
+  --background: 210 16% 6%;
+  --foreground: 40 10% 95%;
+  --card: 210 10% 10%;
+  --card-foreground: 40 10% 95%;
+  --popover: 210 10% 10%;
+  --popover-foreground: 40 10% 95%;
+  --primary: 179 23% 30%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 100 15% 25%;
+  --secondary-foreground: 40 10% 95%;
+  --muted: 210 10% 18%;
+  --muted-foreground: 40 5% 60%;
+  --accent: 18 38% 55%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 10% 18%;
+  --input: 210 10% 18%;
+  --ring: 179 23% 30%;
 }
 
-.bg-flexoki-primary {
-  background-color: var(--flexoki-primary);
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Background utilities */
+.bg-canvas {
+  background-color: var(--bg-canvas);
 }
 
-.bg-flexoki-warning {
-  background-color: var(--flexoki-warning);
+.bg-primary-deep {
+  background-color: var(--primary-deep);
 }
 
-.bg-flexoki-paper {
-  background-color: var(--flexoki-paper);
+.bg-secondary-sage {
+  background-color: var(--secondary-sage);
 }
 
-.text-flexoki {
-  color: var(--flexoki-800);
+.bg-accent-clay {
+  background-color: var(--accent-clay);
 }
 
-.text-flexoki-primary {
-  color: var(--flexoki-primary);
+/* Text utilities */
+.text-foundation {
+  color: var(--text-main);
 }
 
-.text-flexoki-warning {
-  color: var(--flexoki-warning);
+.text-primary-deep {
+  color: var(--primary-deep);
 }
 
-.text-flexoki-muted {
-  color: var(--flexoki-500);
+.text-sage {
+  color: var(--secondary-sage);
 }
 
-.border-flexoki {
-  border-color: var(--flexoki-200);
+.text-accent-clay {
+  color: var(--accent-clay);
 }
 
-.border-flexoki-primary {
-  border-color: var(--flexoki-primary);
+.text-muted-warm {
+  color: var(--neutral-400);
 }
 
-/* Component-specific styles */
+/* Border utilities */
+.border-canvas {
+  border-color: var(--neutral-100);
+}
+
+.border-sage {
+  border-color: rgba(156, 175, 136, 0.2);
+}
+
+.border-primary-deep {
+  border-color: rgba(45, 71, 70, 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENT STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Primary CTA Button */
 .btn-primary {
-  background-color: var(--flexoki-primary);
-  color: white;
+  background-color: var(--accent-clay);
+  color: #ffffff;
+  padding: 12px 28px;
+  border: none;
+  border-radius: var(--radius-pro);
+  font-family: var(--font-ui);
   font-weight: 500;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: var(--transition-smooth);
 }
 
 .btn-primary:hover {
-  background-color: rgb(82, 102, 9);
+  background-color: var(--primary-deep);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 20, 23, 0.1);
 }
 
-.btn-warning {
-  background-color: var(--flexoki-warning);
-  color: white;
+/* Secondary Button */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--primary-deep);
+  padding: 12px 28px;
+  border: 1px solid var(--primary-deep);
+  border-radius: var(--radius-pro);
+  font-family: var(--font-ui);
   font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-smooth);
 }
 
-.input-flexoki {
-  background-color: var(--flexoki-paper);
-  border: 1px solid var(--flexoki-200);
-  color: var(--flexoki-800);
+.btn-secondary:hover {
+  background-color: var(--primary-deep);
+  color: #ffffff;
 }
 
-.input-flexoki:focus {
-  border-color: var(--flexoki-primary);
+/* Input styling */
+.input-prestige {
+  background-color: #ffffff;
+  border: 1px solid var(--neutral-200);
+  color: var(--text-main);
+  border-radius: var(--radius-pro);
+  transition: var(--transition-smooth);
+}
+
+.input-prestige:focus {
+  border-color: var(--primary-deep);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(102, 128, 11, 0.1);
+  box-shadow: 0 0 0 3px rgba(45, 71, 70, 0.1);
 }
 
-/* Card styles */
-.card-flexoki {
-  background-color: var(--flexoki-paper);
-  border: 1px solid var(--flexoki-200);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+/* Card styling — Crop Card pattern */
+.card-prestige {
+  background: #ffffff;
+  border: 1px solid rgba(156, 175, 136, 0.2);
+  border-radius: var(--radius-pro);
+  overflow: hidden;
+  transition: var(--transition-smooth);
 }
 
-/* Typography enhancements */
+.card-prestige:hover {
+  border-color: var(--secondary-sage);
+  transform: scale(1.01);
+}
+
+/* The "Official" Data Look — uppercase labels */
+.data-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  color: var(--secondary-sage);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  color: var(--flexoki-900);
+  font-family: var(--font-header);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--primary-deep);
+}
+
+/* Italic serif for sub-headlines / testimonials */
+.prestige-subheadline {
+  font-family: var(--font-header);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--primary-deep);
 }
 
 body {
-  background-color: var(--flexoki-bg);
-  color: var(--flexoki-800);
+  background-color: var(--bg-canvas);
+  color: var(--text-main);
+  font-family: var(--font-ui);
   line-height: 1.6;
+  text-wrap: pretty;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Selection colors */
 ::selection {
-  background-color: rgba(102, 128, 11, 0.2);
-  color: var(--flexoki-900);
+  background-color: rgba(156, 175, 136, 0.25);
+  color: var(--text-main);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NAVBAR — Frosted Glass
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.navbar-prestige {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(240, 238, 233, 0.85);
+  border-bottom: 1px solid rgba(45, 71, 70, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN DASHBOARD DESIGN SYSTEM
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Yndu Brand Colors — updated */
+:root {
+  --yndu-green: #2d4746;
+  --yndu-green-dark: #1e302f;
+  --yndu-gold: #b36d4f;
+  --yndu-gold-light: #c98d74;
+}
+
+/* Glass Morphism Cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(45, 71, 70, 0.12);
+  border-radius: var(--radius-pro);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.glass-card-hover:hover {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(45, 71, 70, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: var(--transition-smooth);
+}
+
+.dark .glass-card {
+  background: rgba(16, 20, 23, 0.65);
+  border-color: rgba(45, 71, 70, 0.2);
+}
+
+.dark .glass-card-hover:hover {
+  background: rgba(16, 20, 23, 0.75);
+}
+
+/* Admin Sidebar */
+.admin-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: rgba(16, 20, 23, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.admin-sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: var(--radius-pro);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  transition: var(--transition-smooth);
+}
+
+.admin-sidebar-nav-item:hover {
+  background: rgba(45, 71, 70, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.admin-sidebar-nav-item.active {
+  background: rgba(45, 71, 70, 0.25);
+  color: var(--bg-canvas);
+}
+
+.admin-sidebar-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background: var(--primary-deep);
+  border-radius: 0 2px 2px 0;
+}
+
+/* Admin Top Bar */
+.admin-topbar {
+  background: rgba(240, 238, 233, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(45, 71, 70, 0.1);
+}
+
+.dark .admin-topbar {
+  background: rgba(16, 20, 23, 0.8);
+}
+
+/* Admin Search Input */
+.admin-search {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(45, 71, 70, 0.12);
+  border-radius: var(--radius-pro);
+  padding: 10px 16px 10px 44px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  transition: var(--transition-smooth);
+}
+
+.admin-search:focus {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--primary-deep);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 71, 70, 0.1);
+}
+
+.dark .admin-search {
+  background: rgba(16, 20, 23, 0.6);
+  color: var(--bg-canvas);
+}
+
+/* KPI Card */
+.kpi-card {
+  padding: 20px 24px;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+.dark .kpi-value {
+  color: var(--bg-canvas);
+}
+
+/* Trend Badges */
+.trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.trend-badge.up {
+  background: rgba(156, 175, 136, 0.15);
+  color: #5a7863;
+}
+
+.trend-badge.down {
+  background: rgba(179, 109, 79, 0.15);
+  color: var(--accent-clay);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.completed {
+  background: rgba(156, 175, 136, 0.15);
+  color: #5a7863;
+}
+
+.status-badge.in-progress {
+  background: rgba(45, 71, 70, 0.12);
+  color: var(--primary-deep);
+}
+
+.status-badge.pending {
+  background: rgba(179, 109, 79, 0.15);
+  color: var(--accent-clay);
+}
+
+.status-badge.cancelled {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+/* Data Table */
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--secondary-sage);
+  border-bottom: 1px solid rgba(45, 71, 70, 0.1);
+}
+
+.admin-table td {
+  padding: 16px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(45, 71, 70, 0.06);
+}
+
+.admin-table tbody tr {
+  transition: background var(--transition-smooth);
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(45, 71, 70, 0.04);
+}
+
+/* Chart Cards */
+.chart-card {
+  min-height: 320px;
+}
+
+/* Tab Navigation */
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(45, 71, 70, 0.06);
+  border-radius: var(--radius-pro);
+}
+
+.admin-tab {
+  padding: 8px 16px;
+  border-radius: var(--radius-pro);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--neutral-500);
+  transition: var(--transition-smooth);
+}
+
+.admin-tab:hover {
+  color: var(--text-main);
+}
+
+.admin-tab.active {
+  background: white;
+  color: var(--text-main);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dark .admin-tab.active {
+  background: rgba(16, 20, 23, 0.8);
+  color: var(--bg-canvas);
+}
+
+/* Typography Overrides */
+h2 {
+  line-height: 1.4;
 }

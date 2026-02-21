@@ -1,5 +1,5 @@
 // Quantity value object
-export type Unit = "kg" | "g" | "pcs" | "bunches";
+export type Unit = 'kg' | 'g' | 'pcs' | 'bunches';
 
 export class Quantity {
   private constructor(
@@ -7,31 +7,31 @@ export class Quantity {
     readonly unit: Unit,
   ) {
     if (value < 0) {
-      throw new Error("Quantity cannot be negative");
+      throw new Error('Quantity cannot be negative');
     }
   }
 
   static kilograms(value: number): Quantity {
-    return new Quantity(value, "kg");
+    return new Quantity(value, 'kg');
   }
 
   static grams(value: number): Quantity {
-    return new Quantity(value, "g");
+    return new Quantity(value, 'g');
   }
 
   static pieces(value: number): Quantity {
-    return new Quantity(value, "pcs");
+    return new Quantity(value, 'pcs');
   }
 
   static bunches(value: number): Quantity {
-    return new Quantity(value, "bunches");
+    return new Quantity(value, 'bunches');
   }
 
   toKilograms(): number {
     switch (this.unit) {
-      case "kg":
+      case 'kg':
         return this.value;
-      case "g":
+      case 'g':
         return this.value / 1000;
       default:
         throw new Error(`Cannot convert ${this.unit} to kilograms`);

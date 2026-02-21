@@ -1,99 +1,68 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { motion } from 'motion-v';
+import { ShoppingBasket, Calendar, Smile } from 'lucide-vue-next';
 
-// Product data
-const fruitBoxes = ref([
-  {
-    id: 'fruit-small',
-    title: 'Small Fruit Box',
-    price: 1200,
-    description: '4-5 seasonal items. Perfect for singles or couples for a week.',
-    image: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=600&auto=format&fit=crop',
-    imageAlt: 'Box filled with 4-5 types of tropical fruits',
-  },
-  {
-    id: 'fruit-medium',
-    title: 'Medium Fruit Box',
-    price: 2100,
-    description: '7-8 seasonal items. Ideal for a family of three or four.',
-    image: 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?w=600&auto=format&fit=crop',
-    imageAlt: 'Medium size box containing various colorful tropical fruits',
-    badge: 'Most Popular',
-    variant: 'popular' as const,
-  },
-  {
-    id: 'fruit-large',
-    title: 'Large Fruit Box',
-    price: 3500,
-    description: '10+ seasonal items. Best for fruit lovers and large households.',
-    image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=600&auto=format&fit=crop',
-    imageAlt: 'Large overflowing box of assorted fresh fruits',
-  },
-]);
+// SEO Meta (nuxt-core skill: useSeoMeta is recommended)
+useSeoMeta({
+  title: 'Farm Fresh Produce Boxes | Yndu',
+  description: 'Fresh fruit, vegetable, and mixed boxes delivered from Kibwezi Farm to your doorstep. Subscribe for weekly freshness or order one-time.',
+  ogTitle: 'Farm Fresh Produce Boxes | Yndu',
+  ogDescription: 'Fresh fruit, vegetable, and mixed boxes delivered from Kibwezi Farm to your doorstep.',
+  ogImage: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=1200',
+});
 
-const mixedBoxes = ref([
-  {
-    id: 'mixed-small',
-    title: 'Small Mixed Box',
-    price: 1800,
-    description: 'Ideal for 1-2 people',
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop',
-    imageAlt: 'A large mixed box containing kale, tomatoes, oranges and passion fruit',
-  },
-  {
-    id: 'mixed-family',
-    title: 'Family Mixed Box',
-    price: 3200,
-    description: 'Best Value',
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop',
-    imageAlt: 'Family size mixed produce box',
-  },
-]);
+// Fetch products dynamically
+const { data: rawProducts } = await useAsyncData('landing-products', () => 
+  $fetch<{items: any[]}>('/api/inventory?limit=20')
+);
 
-const vegBoxes = ref([
-  {
-    id: 'veg-small',
-    title: 'Small Veg Box',
-    price: 950,
-    description: 'The essentials for your weekly meals.',
-    image: 'https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=600&auto=format&fit=crop',
-    imageAlt: 'Small variety of green vegetables like broccoli and peppers',
-  },
-  {
-    id: 'veg-medium',
-    title: 'Medium Veg Box',
-    price: 1600,
-    description: 'A diverse range of roots and greens for the home cook.',
-    image: 'https://images.unsplash.com/photo-1597362925123-77861d3fbac7?w=600&auto=format&fit=crop',
-    imageAlt: 'Medium assortment of seasonal garden vegetables',
-  },
-  {
-    id: 'veg-large',
-    title: 'Large Veg Box',
-    price: 2800,
-    description: 'Full pantry restock. Best for large families or vegetarian households.',
-    image: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&auto=format&fit=crop',
-    imageAlt: 'Abundance of various fresh vegetables in a large wooden crate',
-  },
-]);
+// Map backend items to frontend product shape
+const mapProduct = (p: any, isPopular = false) => ({
+  id: p.id,
+  title: p.name,
+  price: p.unitPrice?.amount || 0,
+  description: p.description || `${p.availableQuantity?.value} ${p.availableQuantity?.unit} of fresh ${p.name.toLowerCase()}`,
+  image: p.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop',
+  imageAlt: p.name,
+  badge: isPopular ? 'Popular' : undefined,
+  variant: isPopular ? 'popular' as const : undefined,
+});
+
+const fruitBoxes = computed(() => {
+  if (!rawProducts.value?.items) return [];
+  const fruits = rawProducts.value.items.filter((p: any) => p.category === 'FRUITS');
+  return fruits.slice(0, 3).map((p, i) => mapProduct(p, i === 1));
+});
+
+const vegBoxes = computed(() => {
+  if (!rawProducts.value?.items) return [];
+  const veg = rawProducts.value.items.filter((p: any) => p.category === 'VEGETABLES' || p.category === 'ROOT_VEGETABLES');
+  return veg.slice(0, 3).map(p => mapProduct(p));
+});
+
+const mixedBoxes = computed(() => {
+  if (!rawProducts.value?.items) return [];
+  // Just take a mix of whatever
+  return rawProducts.value.items.slice(0, 2).map((p, i) => mapProduct(p, i === 0));
+});
 
 const steps = ref([
   {
     number: '1',
-    icon: 'ShoppingBasket', // Updated to Lucide name
+    icon: ShoppingBasket,
     title: 'Choose Your Box',
     description: 'Select from our curated seasonal mixes or build your own custom crate.',
   },
   {
     number: '2',
-    icon: 'Calendar', // Updated to Lucide name (was calendar_month)
+    icon: Calendar,
     title: 'Schedule Delivery',
     description: 'Pick a one-time delivery or subscribe for weekly freshness and save 10%.',
   },
   {
     number: '3',
-    icon: 'Smile', // Updated to Lucide name (was sentiment_satisfied)
+    icon: Smile,
     title: 'Enjoy Kibwezi Best',
     description: 'Same-day delivery from the farm to your doorstep. Freshness guaranteed.',
   },
@@ -101,13 +70,11 @@ const steps = ref([
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
-      <!-- Hero -->
-      <MotionFadeIn :y="30" :duration="0.6">
-        <HeroSection />
-      </MotionFadeIn>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full">
+      <!-- Hero - No animation wrapper for LCP optimization -->
+      <HeroSection />
       
-      <!-- Fruit Boxes -->
+      <!-- Below fold content with animations -->
       <MotionSlideIn direction="up" :distance="40" :delay="0.1">
         <ProductSection
           title="Fresh Fruit Boxes"
@@ -133,7 +100,7 @@ const steps = ref([
       <MotionSlideIn direction="up" :distance="40" :delay="0.1">
         <ProductSection
           title="Fresh Vegetable Boxes"
-          subtitle="Crisp, organic, and nutritious greens."
+          subtitle="Crisp, farm-fresh, and nutritious greens."
           :products="vegBoxes"
           view-all-link="/shop"
           view-all-label="See all veggies"
@@ -148,9 +115,9 @@ const steps = ref([
       <!-- How It Works -->
       <section class="mt-20 py-10">
         <MotionFadeIn :y="20">
-          <h3 class="text-2xl font-black text-center mb-12 text-flexoki">How it Works</h3>
+          <h3 class="text-2xl font-serif text-center text-balance mb-12 text-primary-deep">How it Works</h3>
         </MotionFadeIn>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-10">
           <component
             :is="motion.div"
             v-for="(step, index) in steps"

@@ -1,6 +1,6 @@
-import { OrderItem } from './OrderItem';
-import { Money } from '../../value-objects/Money';
-import { Kilograms } from '../../value-objects/branded';
+import { OrderItem } from './OrderItem.ts';
+import { Money } from '../../value-objects/Money.ts';
+import { Kilograms } from '../../value-objects/branded.ts';
 
 export function calculateTotalWeight(items: OrderItem[]): number {
   return items.reduce((total, item) => total + item.weight, 0);
@@ -9,7 +9,7 @@ export function calculateTotalWeight(items: OrderItem[]): number {
 export function canAddItem(
   currentItems: OrderItem[],
   newItem: OrderItem,
-  maxWeight: Kilograms
+  maxWeight: Kilograms,
 ): boolean {
   const currentWeight = calculateTotalWeight(currentItems);
   const newWeight = currentWeight + newItem.weight;
@@ -19,7 +19,7 @@ export function canAddItem(
 export function calculateOrderTotal(items: OrderItem[]): Money {
   return items.reduce(
     (total, item) => total.add(item.linePrice),
-    Money.fromCents(0)
+    Money.fromCents(0),
   );
 }
 
@@ -27,14 +27,13 @@ export function determineDeliverySlot(
   orderTime: Date,
   preferredDate: Date,
   inventoryAvailable: boolean,
-  cutoffHour: number = 10
+  cutoffHour: number = 10,
 ): { date: Date; type: 'SAME_DAY' | 'NEXT_DAY' } {
   const cutoff = new Date(orderTime);
   cutoff.setHours(cutoffHour, 0, 0, 0);
 
   const isToday = preferredDate.toDateString() === orderTime.toDateString();
-  const isSameDay = 
-    orderTime < cutoff &&
+  const isSameDay = orderTime < cutoff &&
     isToday &&
     inventoryAvailable;
 

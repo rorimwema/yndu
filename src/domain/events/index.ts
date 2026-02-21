@@ -1,3 +1,4 @@
-export * from './DomainEvent';
-export * from './OrderEvents';
-export * from './InventoryEvents';
+export * from './DomainEvent.ts';
+export * from './OrderEvents.ts';
+export * from './InventoryEvents.ts';
+export * from './SubscriptionEvents.ts';

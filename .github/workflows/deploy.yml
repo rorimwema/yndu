@@ -2,7 +2,7 @@ name: CD - Deploy to VPS
 
 on:
   workflow_run:
-    workflows: ["CI - Build and Test"]
+    workflows: ['CI - Build and Test']
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'production' }}
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success') }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,7 +54,7 @@ jobs:
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Starting deployment to $VPS_HOST..."
-          
+
           # Create deployment script
           cat > deploy.sh << 'EOF'
           #!/bin/bash
@@ -149,7 +149,7 @@ jobs:
           # Health check
           echo "Running health checks..."
           sleep 10
-          
+
           # Check backend health
           if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
             echo "✓ Backend is healthy"

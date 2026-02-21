@@ -4,48 +4,50 @@
  */
 
 export interface CartItem {
-    id: string;
-    productId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    weight: number;
-    image: string;
-    unit: string;
+  id: string;
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  weight: number;
+  image: string;
+  unit: string;
 }
 
 export interface CartState {
-    items: CartItem[];
-    isOpen: boolean;
+  items: CartItem[];
+  isOpen: boolean;
 }
 
 export interface CartTotals {
-    subtotal: number;
-    delivery: number;
-    total: number;
+  subtotal: number;
+  delivery: number;
+  total: number;
 }
 
 export interface AddToCartInput {
-    productId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    weight: number;
-    image: string;
-    unit: string;
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  weight: number;
+  image: string;
+  unit: string;
 }
 
 export interface BoxCartItem extends CartItem {
-    type: 'box';
-    size: 'SMALL' | 'MEDIUM' | 'LARGE';
-    contents: BoxContentItem[];
+  type: 'box';
+  size: 'SMALL' | 'MEDIUM' | 'LARGE';
+  contents: BoxContentItem[];
 }
 
 export interface BoxContentItem {
-    produceId: string;
-    name: string;
-    quantity: number;
-    weight: number;
+  produceId: string;
+  name: string;
+  quantity: number;
+  weight: number;
+  slots: number;
+  image: string;
 }
 
 export type CartItemType = CartItem | BoxCartItem;

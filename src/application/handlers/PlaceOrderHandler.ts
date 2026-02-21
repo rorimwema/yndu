@@ -1,13 +1,16 @@
-import { Result, DomainError } from '../../shared/Result';
-import { Order } from '../../domain/aggregates/Order/Order';
-import { OrderItem } from '../../domain/aggregates/Order/OrderItem';
-import { PlaceOrderCommand } from '../commands/PlaceOrderCommand';
-import { IOrderRepository } from '../../domain/ports/IOrderRepository';
-import { IInventoryRepository } from '../../domain/ports/IInventoryRepository';
-import { IEventPublisher } from '../../domain/ports/IEventPublisher';
-import { DeliverySlot } from '../../domain/value-objects/DeliverySlot';
-import { Money } from '../../domain/value-objects/Money';
-import { calculateOrderTotal } from '../../domain/aggregates/Order/invariants';
+import { DomainError, Result } from '../../shared/Result.ts';
+import { Order } from '../../domain/aggregates/Order/Order.ts';
+import { OrderItem } from '../../domain/aggregates/Order/OrderItem.ts';
+import { PlaceOrderCommand } from '../commands/PlaceOrderCommand.ts';
+import {
+  IEventPublisher,
+  IInventoryRepository,
+  IOrderRepository,
+  IUserRepository,
+} from '../../domain/ports/index.ts';
+import { DeliverySlot } from '../../domain/value-objects/DeliverySlot.ts';
+import { Money as _Money } from '../../domain/value-objects/Money.ts';
+import { calculateOrderTotal } from '../../domain/aggregates/Order/invariants.ts';
 
 export class UserNotFoundError extends DomainError {
   constructor(userId: string) {
@@ -31,13 +34,9 @@ export class InsufficientStockError extends DomainError {
   constructor(produceId: string, requested: number, available: number) {
     super(
       `Insufficient stock for ${produceId}. Requested: ${requested}, Available: ${available}`,
-      'INVENTORY.INSUFFICIENT_STOCK'
+      'INVENTORY.INSUFFICIENT_STOCK',
     );
   }
-}
-
-export interface IUserRepository {
-  findById(userId: string): Promise<{ id: string; addresses: Array<{ id: string }> } | null>;
 }
 
 export class PlaceOrderHandler {
@@ -45,7 +44,7 @@ export class PlaceOrderHandler {
     private orderRepository: IOrderRepository,
     private inventoryRepository: IInventoryRepository,
     private userRepository: IUserRepository,
-    private eventPublisher: IEventPublisher
+    private eventPublisher: IEventPublisher,
   ) {}
 
   async execute(command: PlaceOrderCommand): Promise<Result<Order, DomainError>> {
@@ -56,7 +55,7 @@ export class PlaceOrderHandler {
     }
 
     // 2. Validate address
-    const address = user.addresses.find(a => a.id === command.deliveryAddressId);
+    const address = user.addresses.find((a) => a.id === command.deliveryAddressId);
     if (!address) {
       return Result.fail(new AddressNotFoundError(command.deliveryAddressId));
     }
@@ -73,11 +72,11 @@ export class PlaceOrderHandler {
           new InsufficientStockError(
             item.produceId,
             item.quantity.toKilograms(),
-            produceItem.availableQuantity.toKilograms()
-          )
+            produceItem.availableQuantity.toKilograms(),
+          ),
         );
       }
-      
+
       const linePrice = produceItem.unitPrice.multiply(item.quantity.toKilograms());
       orderItems.push(new OrderItem(item.produceId, item.quantity, linePrice));
     }

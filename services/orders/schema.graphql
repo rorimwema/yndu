@@ -9,6 +9,14 @@ type Order @key(fields: "id") {
   confirmedAt: String
 }
 
+type ProduceItem @key(fields: "id") {
+  id: ID!
+}
+
+type BoxTemplate @key(fields: "id") {
+  id: ID!
+}
+
 type OrderItem {
   id: ID!
   boxTemplate: BoxTemplate
@@ -86,6 +94,11 @@ type Mutation {
   placeOrder(input: PlaceOrderInput!): Order!
   confirmOrder(orderId: ID!): Order!
   cancelOrder(orderId: ID!, reason: String!): Order!
+}
+
+extend type User @key(fields: "id") {
+  id: ID! @external
+  orders(status: OrderStatus): [Order!]!
 }
 
 type Query {

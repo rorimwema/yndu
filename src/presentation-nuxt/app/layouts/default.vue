@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div class="min-h-screen bg-flexoki font-sans text-flexoki-900 selection:bg-flexoki-primary/30">
+  <div class="min-h-screen bg-canvas font-sans text-foundation selection:bg-secondary-sage/25">
     <AppHeader />
     <main>
       <slot />

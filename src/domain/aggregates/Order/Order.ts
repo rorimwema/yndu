@@ -1,11 +1,24 @@
-import { DomainEvent } from '../../events/DomainEvent';
-import { OrderPlaced, OrderConfirmed, OrderCancelled, OrderAssigned, OrderDelivered } from '../../events/OrderEvents';
-import { Money } from '../../value-objects/Money';
-import { DeliverySlot } from '../../value-objects/DeliverySlot';
-import { OrderId, UserId, AddressId } from '../../value-objects/branded';
-import { OrderItem } from './OrderItem';
+import { DomainEvent } from '../../events/DomainEvent.ts';
+import {
+  OrderAssigned,
+  OrderCancelled,
+  OrderConfirmed,
+  OrderDelivered,
+  OrderDispatched,
+  OrderPlaced,
+} from '../../events/OrderEvents.ts';
+import { Money } from '../../value-objects/Money.ts';
+import { DeliverySlot } from '../../value-objects/DeliverySlot.ts';
+import { AddressId, OrderId, UserId } from '../../value-objects/branded.ts';
+import { OrderItem } from './OrderItem.ts';
 
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'ASSIGNED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
+export type OrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'ASSIGNED'
+  | 'DISPATCHED'
+  | 'DELIVERED'
+  | 'CANCELLED';
 
 export interface OrderProps {
   id?: OrderId;
@@ -20,7 +33,7 @@ export interface OrderProps {
 
 export class Order {
   private uncommittedEvents: DomainEvent[] = [];
-  
+
   readonly id: OrderId;
   readonly userId: UserId;
   readonly items: OrderItem[];
@@ -43,12 +56,12 @@ export class Order {
 
   static create(props: OrderProps): Order {
     const order = new Order(props);
-    
+
     const event = new OrderPlaced(
       order.id,
       order.version + 1,
       order.userId,
-      order.items.map(item => ({
+      order.items.map((item) => ({
         produceId: item.produceId,
         quantity: item.quantity,
         linePrice: item.linePrice,
@@ -57,7 +70,7 @@ export class Order {
       order.deliverySlot,
       order.deliveryAddressId,
     );
-    
+
     order.applyEvent(event);
     return order;
   }
@@ -66,14 +79,14 @@ export class Order {
     if (this.status !== 'PENDING') {
       throw new Error(`Cannot confirm order in ${this.status} status`);
     }
-    
+
     const event = new OrderConfirmed(
       this.id,
       this.version + 1,
       new Date(),
       confirmedBy,
     );
-    
+
     this.applyEvent(event);
   }
 
@@ -81,7 +94,7 @@ export class Order {
     if (['DELIVERED', 'CANCELLED'].includes(this.status)) {
       throw new Error(`Cannot cancel order in ${this.status} status`);
     }
-    
+
     const event = new OrderCancelled(
       this.id,
       this.version + 1,
@@ -89,7 +102,7 @@ export class Order {
       reason,
       cancelledBy,
     );
-    
+
     this.applyEvent(event);
   }
 
@@ -97,29 +110,43 @@ export class Order {
     if (this.status !== 'CONFIRMED') {
       throw new Error(`Cannot assign rider to order in ${this.status} status`);
     }
-    
+
     const event = new OrderAssigned(
       this.id,
       this.version + 1,
       riderId,
       new Date(),
     );
-    
+
+    this.applyEvent(event);
+  }
+
+  markAsDispatched(): void {
+    if (this.status !== 'ASSIGNED') {
+      throw new Error(`Cannot dispatch order in ${this.status} status`);
+    }
+
+    const event = new OrderDispatched(
+      this.id,
+      this.version + 1,
+      new Date(),
+    );
+
     this.applyEvent(event);
   }
 
   markDelivered(deliveryProof?: { photoUrl?: string; signature?: string; notes?: string }): void {
-    if (this.status !== 'ASSIGNED' && this.status !== 'OUT_FOR_DELIVERY') {
+    if (this.status !== 'ASSIGNED' && this.status !== 'DISPATCHED') {
       throw new Error(`Cannot mark as delivered order in ${this.status} status`);
     }
-    
+
     const event = new OrderDelivered(
       this.id,
       this.version + 1,
       new Date(),
       deliveryProof,
     );
-    
+
     this.applyEvent(event);
   }
 
@@ -134,6 +161,8 @@ export class Order {
       this.status = 'CANCELLED';
     } else if (event instanceof OrderAssigned) {
       this.status = 'ASSIGNED';
+    } else if (event instanceof OrderDispatched) {
+      this.status = 'DISPATCHED';
     } else if (event instanceof OrderDelivered) {
       this.status = 'DELIVERED';
     }
@@ -155,7 +184,7 @@ export class Order {
     return {
       id: this.id,
       userId: this.userId,
-      items: this.items.map(item => ({
+      items: this.items.map((item) => ({
         produceId: item.produceId,
         quantity: item.quantity,
         linePrice: item.linePrice,
@@ -181,14 +210,16 @@ export class Order {
       throw new Error('First event must be OrderPlaced');
     }
 
-    let order = new Order({
+    const order = new Order({
       id: firstEvent.aggregateId as OrderId,
       userId: firstEvent.userId,
-      items: firstEvent.items.map(item => new OrderItem(
-        item.produceId,
-        item.quantity,
-        item.linePrice
-      )),
+      items: firstEvent.items.map((item) =>
+        new OrderItem(
+          item.produceId,
+          item.quantity,
+          item.linePrice,
+        )
+      ),
       totalPrice: firstEvent.totalPrice,
       deliverySlot: firstEvent.deliverySlot,
       deliveryAddressId: firstEvent.deliveryAddressId as AddressId,

@@ -1,21 +1,32 @@
-import { IOrderRepository } from '../../../domain/ports/IOrderRepository';
-import { Order, OrderStatus } from '../../../domain/aggregates/Order/Order';
-import { OrderId, UserId, AddressId, ProduceItemId } from '../../../domain/value-objects/branded';
-import { Money } from '../../../domain/value-objects/Money';
-import { DeliverySlot } from '../../../domain/value-objects/DeliverySlot';
-import { Quantity } from '../../../domain/value-objects/Quantity';
-import { OrderItem } from '../../../domain/aggregates/Order/OrderItem';
-import { DomainEvent } from '../../../domain/events/DomainEvent';
-import { OrderPlaced, OrderConfirmed, OrderCancelled, OrderAssigned, OrderDelivered } from '../../../domain/events/OrderEvents';
+import { IOrderRepository } from '../../../domain/ports/IOrderRepository.ts';
+import { Order, OrderStatus } from '../../../domain/aggregates/Order/Order.ts';
+import {
+  AddressId,
+  OrderId,
+  ProduceItemId,
+  UserId,
+} from '../../../domain/value-objects/branded.ts';
+import { Money } from '../../../domain/value-objects/Money.ts';
+import { DeliverySlot } from '../../../domain/value-objects/DeliverySlot.ts';
+import { Quantity } from '../../../domain/value-objects/Quantity.ts';
+import { OrderItem } from '../../../domain/aggregates/Order/OrderItem.ts';
+import { DomainEvent } from '../../../domain/events/DomainEvent.ts';
+import {
+  OrderAssigned,
+  OrderCancelled,
+  OrderConfirmed,
+  OrderDelivered,
+  OrderPlaced,
+} from '../../../domain/events/OrderEvents.ts';
 
 export class PostgresOrderRepository implements IOrderRepository {
-  constructor(private db: any) {}
+  constructor(private db: unknown) {}
 
   async save(order: Order): Promise<void> {
     const events = order.getUncommittedEvents();
     const snapshot = order.toSnapshot();
 
-    await this.db.transaction(async (trx: any) => {
+    await this.db.transaction(async (trx: unknown) => {
       // 1. Append events to event store
       for (const event of events) {
         await trx('domain_events').insert({
@@ -59,7 +70,7 @@ export class PostgresOrderRepository implements IOrderRepository {
 
     if (events.length === 0) return null;
 
-    return Order.rehydrate(events.map((e: any) => this.deserializeEvent(e)));
+    return Order.rehydrate(events.map((e: Record<string, unknown>) => this.deserializeEvent(e)));
   }
 
   async findByUserId(userId: string): Promise<Order[]> {
@@ -67,7 +78,7 @@ export class PostgresOrderRepository implements IOrderRepository {
       .where('user_id', userId)
       .orderBy('placed_at', 'desc');
 
-    return rows.map((row: any) => this.fromReadModel(row));
+    return rows.map((row: Record<string, unknown>) => this.fromReadModel(row));
   }
 
   private toReadModel(order: Order): object {
@@ -79,7 +90,7 @@ export class PostgresOrderRepository implements IOrderRepository {
       delivery_date: order.deliverySlot.date,
       slot_type: order.deliverySlot.type,
       delivery_address_id: order.deliveryAddressId,
-      items: JSON.stringify(order.items.map(item => ({
+      items: JSON.stringify(order.items.map((item) => ({
         produce_id: item.produceId,
         quantity_value: item.quantity.value,
         quantity_unit: item.quantity.unit,
@@ -89,14 +100,16 @@ export class PostgresOrderRepository implements IOrderRepository {
     };
   }
 
-  private fromReadModel(row: any): Order {
-    const items = JSON.parse(row.items || '[]').map((item: any) => new OrderItem(
-      item.produce_id as ProduceItemId,
-      Quantity.kilograms(item.quantity_value),
-      Money.fromCents(item.line_price_cents)
-    ));
+  private fromReadModel(row: Record<string, unknown>): Order {
+    const items = JSON.parse(row.items as string || '[]').map((item: Record<string, unknown>) =>
+      new OrderItem(
+        item.produce_id as ProduceItemId,
+        Quantity.kilograms(item.quantity_value),
+        Money.fromCents(item.line_price_cents),
+      )
+    );
 
-    return new (Order as any)({
+    return new (Order as unknown as typeof Order)({
       id: row.id as OrderId,
       userId: row.user_id as UserId,
       items,
@@ -108,17 +121,17 @@ export class PostgresOrderRepository implements IOrderRepository {
     });
   }
 
-  private deserializeEvent(row: any): DomainEvent {
+  private deserializeEvent(row: Record<string, unknown>): DomainEvent {
     const payload = JSON.parse(row.payload);
     const metadata = JSON.parse(row.metadata || '{}');
-    
+
     switch (row.event_type) {
       case 'OrderPlaced':
         return new OrderPlaced(
           row.stream_id,
           row.version,
           payload.userId,
-          payload.items.map((item: any) => ({
+          payload.items.map((item: Record<string, unknown>) => ({
             produceId: item.produceId as ProduceItemId,
             quantity: Quantity.kilograms(item.quantity.value || item.quantity),
             linePrice: Money.fromCents(item.linePrice.amount || item.linePrice),
@@ -126,7 +139,7 @@ export class PostgresOrderRepository implements IOrderRepository {
           Money.fromCents(payload.totalPrice.amount || payload.totalPrice),
           DeliverySlot.forDate(new Date(payload.deliverySlot.date), payload.deliverySlot.type),
           payload.deliveryAddressId,
-          metadata
+          metadata,
         );
       case 'OrderConfirmed':
         return new OrderConfirmed(
@@ -134,7 +147,7 @@ export class PostgresOrderRepository implements IOrderRepository {
           row.version,
           new Date(payload.confirmedAt),
           payload.confirmedBy,
-          metadata
+          metadata,
         );
       case 'OrderCancelled':
         return new OrderCancelled(
@@ -143,7 +156,7 @@ export class PostgresOrderRepository implements IOrderRepository {
           new Date(payload.cancelledAt),
           payload.reason,
           payload.cancelledBy,
-          metadata
+          metadata,
         );
       case 'OrderAssigned':
         return new OrderAssigned(
@@ -151,7 +164,7 @@ export class PostgresOrderRepository implements IOrderRepository {
           row.version,
           payload.riderId,
           new Date(payload.assignedAt),
-          metadata
+          metadata,
         );
       case 'OrderDelivered':
         return new OrderDelivered(
@@ -159,7 +172,7 @@ export class PostgresOrderRepository implements IOrderRepository {
           row.version,
           new Date(payload.deliveredAt),
           payload.deliveryProof,
-          metadata
+          metadata,
         );
       default:
         throw new Error(`Unknown event type: ${row.event_type}`);

@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { motion } from 'motion-v';
 import { CheckCircle, Plus, Check } from 'lucide-vue-next';
 import ProductCard from './ProductCard.vue';
-import { useCartStore } from '../stores/cartStore';
+import { useCartStore } from '../stores/cart-store';
 const cart = useCartStore();
 
 interface Product {
@@ -66,14 +66,14 @@ const handleQuickAdd = (product: Product) => {
   <section class="mb-16" :class="{ 'bg-[rgba(190,201,126,0.15)] backdrop-blur-lg border border-[rgba(190,201,126,0.3)] rounded-2xl p-6 sm:p-8 md:p-12 shadow-xl shadow-[rgba(190,201,126,0.1)]': layout === 'highlighted' }">
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h3 class="text-2xl font-black text-flexoki">
+        <h3 class="text-2xl font-black text-foundation">
           {{ title }}
         </h3>
-        <p class="text-flexoki-muted">{{ subtitle }}</p>
+        <p class="text-neutral-400">{{ subtitle }}</p>
       </div>
       <NuxtLink 
         :to="viewAllLink"
-        class="text-flexoki-primary font-bold hover:underline"
+        class="text-primary-deep font-bold hover:underline"
       >
         {{ viewAllLabel }}
       </NuxtLink>
@@ -92,7 +92,7 @@ const handleQuickAdd = (product: Product) => {
     <!-- Highlighted Layout (Mixed Boxes) -->
     <div v-else class="flex flex-col md:flex-row items-center gap-12">
       <div class="flex-1">
-        <p class="text-flexoki-800/80 text-lg mb-8 max-w-md">
+        <p class="text-foundation/80 text-lg mb-8 max-w-md">
           Can't decide? Get a perfect balance of seasonal fruits and crisp vegetables in one curated box.
         </p>
         <div class="space-y-4">
@@ -108,35 +108,41 @@ const handleQuickAdd = (product: Product) => {
             :while-hover="{ scale: 1.02 }"
             :while-press="{ scale: 0.98 }"
           >
-            <CheckCircle :size="20" class="text-flexoki-primary" />
+            <CheckCircle :size="20" class="text-primary-deep" />
             <div class="flex-1">
-              <p class="font-bold text-flexoki-900">{{ product.title }}</p>
-              <p class="text-xs text-flexoki-700">KSh {{ product.price.toLocaleString() }} • {{ product.description }}</p>
+              <p class="font-bold text-foundation">{{ product.title }}</p>
+              <p class="text-xs text-neutral-600">KSh {{ product.price.toLocaleString() }} • {{ product.description }}</p>
             </div>
             <component
               :is="motion.button"
               @click="handleQuickAdd(product)"
-              class="bg-flexoki-primary text-flexoki p-2 rounded-lg hover:shadow-lg transition-all"
+              class="bg-primary-deep text-foundation p-2 rounded-lg hover:shadow-lg transition-all"
               :while-hover="{ scale: 1.1 }"
               :while-press="{ scale: 0.9 }"
             >
-              <Plus :size="18" class="text-flexoki-900" />
+              <Plus :size="18" class="text-foundation" />
             </component>
           </component>
         </div>
       </div>
       <div class="flex-1 w-full max-w-md">
-        <component
-          :is="motion.img"
-          :src="products[0]?.image || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800'"
-          alt="Mixed produce box"
-          class="rounded-xl shadow-2xl"
+        <component :is="motion.div"
           :initial="{ opacity: 0, rotate: 0 }"
           :while-in-view="{ opacity: 1, rotate: 2 }"
           :viewport="{ once: true }"
           :while-hover="{ rotate: 0, scale: 1.02 }"
           :transition="{ duration: 0.5 }"
-        />
+          class="relative w-full aspect-square md:aspect-auto h-full min-h-[300px]"
+        >
+          <NuxtImg
+            :src="products[0]?.image || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800'"
+            alt="Mixed produce box"
+            class="rounded-xl shadow-2xl object-cover absolute inset-0 w-full h-full"
+            format="webp"
+            loading="lazy"
+            sizes="sm:100vw md:50vw lg:400px"
+          />
+        </component>
       </div>
     </div>
 
@@ -152,16 +158,16 @@ const handleQuickAdd = (product: Product) => {
       >
         <div 
           v-if="showToast"
-          class="fixed bottom-6 right-6 z-50 bg-flexoki-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3"
+          class="fixed bottom-6 right-6 z-50 bg-foundation text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3"
         >
-          <div class="bg-flexoki-primary rounded-full p-1">
-            <Check :size="16" class="text-flexoki-900" />
+          <div class="bg-primary-deep rounded-full p-1">
+            <Check :size="16" class="text-foundation" />
           </div>
           <div>
             <p class="font-semibold">{{ toastMessage }}</p>
             <button 
               @click="cart.openCart()"
-              class="text-sm text-flexoki-primary hover:underline"
+              class="text-sm text-primary-deep hover:underline"
             >
               View Cart →
             </button>

@@ -1,31 +1,38 @@
-// Database configuration and connection
-import { PostgresClient, type PostgresOptions } from "../deps.ts";
-import { load } from "std/dotenv/mod.ts";
+// Database configuration and connection using Knex
+import { Knex } from '../../deps.ts';
+import { getEnv } from './secret-env.ts';
 
-const env = await load();
-
-const dbConfig: PostgresOptions = {
-  hostname: env.DATABASE_HOST || "localhost",
-  port: parseInt(env.DATABASE_PORT || "5432"),
-  user: env.DATABASE_USER || "postgres",
-  password: env.DATABASE_PASSWORD || "pass",
-  database: env.DATABASE_NAME || "yndu",
+const knexConfig: Knex.Config = {
+  client: 'pg',
+  connection: {
+    host: getEnv('DATABASE_HOST', 'localhost'),
+    port: parseInt(getEnv('DATABASE_PORT', '5432')),
+    user: getEnv('DATABASE_USER', 'postgres'),
+    password: getEnv('DATABASE_PASSWORD', 'pass'),
+    database: getEnv('DATABASE_NAME', 'yndu'),
+  },
+  pool: {
+    min: 2,
+    max: 10,
+  },
 };
 
-export const dbClient = new PostgresClient(dbConfig);
+export const db: Knex = Knex(knexConfig);
+
+export type Database = Knex;
 
 export async function connectDatabase() {
   try {
-    await dbClient.connect();
-    console.log("✅ Database connected");
-    return dbClient;
+    await db.raw('SELECT 1');
+    console.log('✅ Database connected');
+    return db;
   } catch (error) {
-    console.error("❌ Database connection failed:", error);
+    console.error('❌ Database connection failed:', error);
     throw error;
   }
 }
 
 export async function disconnectDatabase() {
-  await dbClient.end();
-  console.log("✅ Database disconnected");
+  await db.destroy();
+  console.log('✅ Database disconnected');
 }

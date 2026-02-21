@@ -1,11 +1,11 @@
-import { GetUserOrdersQuery, UserOrderDto } from '../queries/GetUserOrdersQuery';
+import { GetUserOrdersQuery, UserOrderDto } from '../queries/GetUserOrdersQuery.ts';
 
 export interface IQueryHandler<Q, R> {
   execute(query: Q): Promise<R>;
 }
 
 export class GetUserOrdersHandler implements IQueryHandler<GetUserOrdersQuery, UserOrderDto[]> {
-  constructor(private db: any) {}
+  constructor(private db: unknown) {}
 
   async execute(query: GetUserOrdersQuery): Promise<UserOrderDto[]> {
     let dbQuery = this.db('orders')
@@ -28,7 +28,7 @@ export class GetUserOrdersHandler implements IQueryHandler<GetUserOrdersQuery, U
 
     const rows = await dbQuery;
 
-    return rows.map((row: any) => ({
+    return rows.map((row: Record<string, unknown>) => ({
       id: row.id,
       status: row.status,
       totalPrice: formatKES(row.total_price_cents),

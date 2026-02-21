@@ -4,15 +4,16 @@
 // Branded types for type safety
 export type Brand<K, T> = K & { __brand: T };
 
-export type UserId = Brand<string, "UserId">;
-export type OrderId = Brand<string, "OrderId">;
-export type ProduceItemId = Brand<string, "ProduceItemId">;
-export type RiderId = Brand<string, "RiderId">;
+export type UserId = Brand<string, 'UserId'>;
+export type OrderId = Brand<string, 'OrderId'>;
+export type ProduceItemId = Brand<string, 'ProduceItemId'>;
+export type RiderId = Brand<string, 'RiderId'>;
+export type SubscriptionId = Brand<string, 'SubscriptionId'>;
+export type AddressId = Brand<string, 'AddressId'>;
 
 // Validation functions
 export function isValidUUID(id: string): boolean {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(id);
 }
 
@@ -31,17 +32,27 @@ export function ProduceItemId(id: string): ProduceItemId {
   return id as ProduceItemId;
 }
 
+export function SubscriptionId(id: string): SubscriptionId {
+  if (!isValidUUID(id)) throw new Error(`Invalid SubscriptionId: ${id}`);
+  return id as SubscriptionId;
+}
+
+export function AddressId(id: string): AddressId {
+  if (!isValidUUID(id)) throw new Error(`Invalid AddressId: ${id}`);
+  return id as AddressId;
+}
+
 // Money value object
 export class Money {
   private constructor(
     readonly amount: number,
-    readonly currency: "KES" = "KES",
+    readonly currency: 'KES' = 'KES',
   ) {
     if (!Number.isInteger(amount)) {
-      throw new Error("Money amount must be an integer (cents)");
+      throw new Error('Money amount must be an integer (cents)');
     }
     if (amount < 0) {
-      throw new Error("Money amount cannot be negative");
+      throw new Error('Money amount cannot be negative');
     }
   }
 
@@ -55,7 +66,7 @@ export class Money {
 
   add(other: Money): Money {
     if (this.currency !== other.currency) {
-      throw new Error("Cannot add different currencies");
+      throw new Error('Cannot add different currencies');
     }
     return new Money(this.amount + other.amount, this.currency);
   }

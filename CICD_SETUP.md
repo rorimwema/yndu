@@ -1,6 +1,7 @@
 # CI/CD Pipeline Setup Guide
 
-This guide walks you through setting up a complete CI/CD pipeline for YNDU using GitHub Actions and deploying to your self-hosted VPS.
+This guide walks you through setting up a complete CI/CD pipeline for YNDU using GitHub Actions and
+deploying to your self-hosted VPS.
 
 ## Architecture Overview
 
@@ -88,6 +89,7 @@ sudo DOMAIN=yourdomain.com EMAIL=admin@yourdomain.com ./vps-setup.sh
 ```
 
 This will:
+
 - Install Docker and Docker Compose
 - Set up SSL certificates with Let's Encrypt
 - Configure the firewall
@@ -107,13 +109,13 @@ This will:
 
 Go to **Settings → Secrets and variables → Actions → New repository secret**
 
-| Secret | Description | How to Get |
-|--------|-------------|------------|
-| `VPS_SSH_KEY` | SSH private key for VPS access | `cat ~/.ssh/your_key` |
-| `VPS_HOST` | VPS IP or domain | Your VPS IP/hostname |
-| `VPS_USER` | SSH username | Usually `root` or `ubuntu` |
-| `DOMAIN` | Your domain name | e.g., `app.yourdomain.com` |
-| `DEPLOY_PATH` | Deploy path on VPS | Default: `/opt/yndu` |
+| Secret        | Description                    | How to Get                 |
+| ------------- | ------------------------------ | -------------------------- |
+| `VPS_SSH_KEY` | SSH private key for VPS access | `cat ~/.ssh/your_key`      |
+| `VPS_HOST`    | VPS IP or domain               | Your VPS IP/hostname       |
+| `VPS_USER`    | SSH username                   | Usually `root` or `ubuntu` |
+| `DOMAIN`      | Your domain name               | e.g., `app.yourdomain.com` |
+| `DEPLOY_PATH` | Deploy path on VPS             | Default: `/opt/yndu`       |
 
 #### Generating SSH Key
 
@@ -135,9 +137,11 @@ cat ~/.ssh/github_actions
 The following workflows are automatically configured:
 
 ### 3.1 CI Workflow (`ci.yml`)
+
 **Triggers:** Push to any branch, PR to main/develop
 
 **Jobs:**
+
 - ✅ Lint and format checks (Deno)
 - ✅ Type checking
 - ✅ Unit tests
@@ -146,14 +150,17 @@ The following workflows are automatically configured:
 - ✅ Security scanning
 
 ### 3.2 Deploy Workflow (`deploy.yml`)
+
 **Triggers:** Push to `main`, Manual dispatch
 
 **Jobs:**
+
 - 🚀 Deploy to VPS
 - 🔍 Health checks
 - 🧹 Cleanup old images
 
 ### 3.3 Rollback Workflow (`rollback.yml`)
+
 **Triggers:** Manual dispatch
 
 **Purpose:** Rollback to a previous version
@@ -203,6 +210,7 @@ sudo nano /opt/yndu/.env.production
 ```
 
 Update these critical values:
+
 ```bash
 DATABASE_PASSWORD=your_secure_password
 REDIS_PASSWORD=your_secure_password
@@ -213,6 +221,7 @@ HASHPAY_ACCOUNT_ID=your_account_id
 ```
 
 Then restart services:
+
 ```bash
 cd /opt/yndu
 docker compose -f docker-compose.production.yml restart
@@ -233,16 +242,19 @@ curl -vI https://yourdomain.com
 ## Deployment Options
 
 ### Option 1: Automatic (GitHub Actions)
+
 - Push to `main` → Auto deploy
 - Best for: Regular development workflow
 
 ### Option 2: Manual (On VPS)
+
 ```bash
 cd /opt/yndu
 ./manual-deploy.sh --tag v1.2.3
 ```
 
 ### Option 3: Direct Docker Compose
+
 ```bash
 cd /opt/yndu
 docker compose -f docker-compose.production.yml pull
@@ -381,7 +393,7 @@ docker compose -f docker-compose.production.yml exec postgres psql -U postgres -
    ```bash
    # Update system packages
    sudo apt update && sudo apt upgrade -y
-   
+
    # Update Docker images
    docker compose -f docker-compose.production.yml pull
    docker compose -f docker-compose.production.yml up -d
@@ -391,7 +403,7 @@ docker compose -f docker-compose.production.yml exec postgres psql -U postgres -
    ```bash
    # Check SSH logs
    sudo tail -f /var/log/auth.log
-   
+
    # Check nginx access logs
    docker compose -f docker-compose.production.yml logs nginx
    ```
@@ -406,19 +418,20 @@ docker compose -f docker-compose.production.yml exec postgres psql -U postgres -
 
 ## Directory Reference
 
-| Path | Purpose |
-|------|---------|
-| `/opt/yndu` | Main deployment directory |
-| `/opt/yndu/nginx/ssl` | SSL certificates |
-| `/opt/yndu/.env.production` | Environment variables |
-| `/var/backups/yndu` | Database backups |
-| `/var/log` | System logs |
+| Path                        | Purpose                   |
+| --------------------------- | ------------------------- |
+| `/opt/yndu`                 | Main deployment directory |
+| `/opt/yndu/nginx/ssl`       | SSL certificates          |
+| `/opt/yndu/.env.production` | Environment variables     |
+| `/var/backups/yndu`         | Database backups          |
+| `/var/log`                  | System logs               |
 
 ---
 
 ## Support
 
 For issues:
+
 1. Check GitHub Actions logs
 2. Review VPS logs: `journalctl -u yndu.service`
 3. Check Docker logs: `docker compose logs`

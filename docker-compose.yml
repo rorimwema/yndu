@@ -1,124 +1,211 @@
-version: '3.8'
+name: yndu_dev_local
 
 services:
-  # GraphQL Gateway
-  gateway:
-    build: ./gateway
-    ports:
-      - "4000:4000"
-    environment:
-      - USER_SERVICE_URL=http://users:4001
-      - INVENTORY_SERVICE_URL=http://inventory:4002
-      - ORDER_SERVICE_URL=http://orders:4003
-    depends_on:
-      - users
-      - inventory
-      - orders
-
-  # Bounded Context: User Management (Deno)
-  users:
-    build:
-      context: .
-      dockerfile: Dockerfile.deno
-    ports:
-      - "4001:8000"
-    environment:
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DATABASE_USER=postgres
-      - DATABASE_PASSWORD=pass
-      - DATABASE_NAME=yndu
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - PORT=8000
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ./src:/app/src
-    command: ["task", "dev"]
-
-  # Bounded Context: Inventory (Deno)
-  inventory:
-    build:
-      context: .
-      dockerfile: Dockerfile.deno
-    ports:
-      - "4002:8000"
-    environment:
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DATABASE_USER=postgres
-      - DATABASE_PASSWORD=pass
-      - DATABASE_NAME=yndu
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - PORT=8000
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ./src:/app/src
-    command: ["run", "--allow-net", "--allow-read", "--allow-env", "src/main.ts"]
-
-  # Bounded Context: Ordering
-  orders:
-    build: ./services/orders
-    ports:
-      - "4003:4003"
-    environment:
-      - DATABASE_URL=postgres://postgres:pass@postgres:5432/orders
-      - EVENT_BUS_URL=redis://redis:6379
-      - PORT=4003
-    depends_on:
-      - postgres
-      - redis
-
-  # Shared Infrastructure
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     ports:
-      - "5432:5432"
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: yndu
+    secrets:
+      - postgres_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/infrastructure/adapters/postgres/migrations:/docker-entrypoint-initdb.d
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=yndu
+      - ./src/infrastructure/adapters/postgres/migrations:/migrations:ro
+      - ./src/infrastructure/adapters/postgres/seeds:/seeds:ro
+      - ./src/infrastructure/adapters/postgres/bootstrap/dev_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d yndu']
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+    # Memory limits
+    mem_limit: 512m
+    memswap_limit: 512m
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
+    command: [
+      'redis-server',
+      '--appendonly',
+      'yes',
+      '--maxmemory',
+      '256mb',
+      '--maxmemory-policy',
+      'allkeys-lru',
+    ]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+    mem_limit: 256m
+    memswap_limit: 256m
 
-  # Vue 3 Frontend
-  frontend:
+  backend:
     build:
-      context: ./src/presentation
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.deno
+    working_dir: /app
+    command: ['deno', 'task', 'dev']
     ports:
-      - "3000:3000"
+      - '8000:8000'
     environment:
-      - VITE_GRAPHQL_URL=http://localhost:4000/graphql
+      PORT: '8000'
+      HOST: '0.0.0.0'
+      DATABASE_HOST: postgres
+      DATABASE_PORT: '5432'
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD_FILE: /run/secrets/database_password
+      DATABASE_NAME: yndu
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      REDIS_USERNAME: 'dev-redis-user'
+      REDIS_DB: '0'
+      CORS_ORIGIN: 'http://localhost:3000'
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      HASHPAY_API_KEY_FILE: /run/secrets/hashpay_api_key
+      HASHPAY_ACCOUNT_ID_FILE: /run/secrets/hashpay_account_id
+      BCRYPT_ROUNDS: '12'
+      SESSION_TIMEOUT: '600'
+      REFRESH_TOKEN_TIMEOUT: '604800'
+      MAX_LOGIN_ATTEMPTS: '5'
+      LOCKOUT_DURATION: '3600'
+      RATE_LIMIT_WINDOW_MS: '900000'
+      RATE_LIMIT_MAX: '100'
     volumes:
-      - ./src/presentation:/app
-      - /app/node_modules
+      - ./:/app
+    secrets:
+      - database_password
+      - redis_password
+      - jwt_secret
+      - hashpay_api_key
+      - hashpay_account_id
     depends_on:
-      - gateway
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    mem_limit: 512m
+    memswap_limit: 512m
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command:
+      [
+        'sh',
+        '-c',
+        "export NUXT_SESSION_PASSWORD=\"$(cat \"$$NUXT_SESSION_PASSWORD_FILE\")\" && npm install && npm run dev -- --host 0.0.0.0 --port 3000",
+      ]
+    ports:
+      - '3000:3000'
+    environment:
+      DENO_API_URL: 'http://backend:8000'
+      NUXT_TELEMETRY_DISABLED: '1'
+      NUXT_SESSION_PASSWORD_FILE: /run/secrets/nuxt_session_password
+      NODE_OPTIONS: '--max-old-space-size=512'
+    volumes:
+      - ./src/presentation-nuxt:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_nuxt_data:/app/.nuxt
+      - frontend_output_data:/app/.output
+    secrets:
+      - nuxt_session_password
+    depends_on:
+      - backend
+    mem_limit: 1g
+    memswap_limit: 1g
+
+  users:
+    build:
+      context: ./services/users
+      dockerfile: Dockerfile
+    environment:
+      PORT: '4001'
+      BACKEND_URL: 'http://backend:8000'
+      NODE_OPTIONS: '--max-old-space-size=256'
+    ports:
+      - '4001:4001'
+    depends_on:
+      - backend
+    mem_limit: 256m
+    memswap_limit: 256m
+
+  inventory:
+    build:
+      context: ./services/inventory
+      dockerfile: Dockerfile
+    environment:
+      PORT: '4002'
+      BACKEND_URL: 'http://backend:8000'
+      NODE_OPTIONS: '--max-old-space-size=256'
+    ports:
+      - '4002:4002'
+    depends_on:
+      - backend
+    mem_limit: 256m
+    memswap_limit: 256m
+
+  orders:
+    build:
+      context: ./services/orders
+      dockerfile: Dockerfile
+    environment:
+      PORT: '4003'
+      BACKEND_URL: 'http://backend:8000'
+      NODE_OPTIONS: '--max-old-space-size=256'
+    ports:
+      - '4003:4003'
+    depends_on:
+      - backend
+    mem_limit: 256m
+    memswap_limit: 256m
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    environment:
+      USER_SERVICE_URL: 'http://users:4001/graphql'
+      INVENTORY_SERVICE_URL: 'http://inventory:4002/graphql'
+      ORDER_SERVICE_URL: 'http://orders:4003/graphql'
+      NODE_OPTIONS: '--max-old-space-size=256'
+    ports:
+      - '4000:4000'
+    depends_on:
+      - users
+      - inventory
+      - orders
+    mem_limit: 256m
+    memswap_limit: 256m
 
 volumes:
   postgres_data:
   redis_data:
+  frontend_node_modules:
+  frontend_nuxt_data:
+  frontend_output_data:
+
+secrets:
+  postgres_password:
+    file: ./secrets/dev/postgres_password.txt
+  database_password:
+    file: ./secrets/dev/database_password.txt
+  redis_password:
+    file: ./secrets/dev/redis_password.txt
+  jwt_secret:
+    file: ./secrets/dev/jwt_secret.txt
+  hashpay_api_key:
+    file: ./secrets/dev/hashpay_api_key.txt
+  hashpay_account_id:
+    file: ./secrets/dev/hashpay_account_id.txt
+  nuxt_session_password:
+    file: ./secrets/dev/nuxt_session_password.txt

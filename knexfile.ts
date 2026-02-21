@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import process from 'node:process';
 
 const config: { [key: string]: Knex.Config } = {
   development: {

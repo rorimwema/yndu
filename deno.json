@@ -19,6 +19,10 @@
     "@domain/": "./src/domain/",
     "@application/": "./src/application/",
     "@infrastructure/": "./src/infrastructure/",
+    "onyx": "https://deno.land/x/onyx/mod.ts",
+    "onyx/": "https://deno.land/x/onyx/",
+    "djwt": "https://deno.land/x/djwt@v3.0.2/mod.ts",
+    "bcrypt": "https://deno.land/x/bcrypt@v0.4.1/mod.ts",
     "std/": "https://deno.land/std@0.220.0/",
     "graphql": "https://deno.land/x/graphql_tag@0.1.2/mod.ts",
     "postgres": "https://deno.land/x/postgres@v0.19.3/mod.ts",
@@ -26,19 +30,38 @@
     "zod": "https://deno.land/x/zod@v3.22.4/mod.ts",
     "oak": "https://deno.land/x/oak@v16.0.0/mod.ts",
     "cors": "https://deno.land/x/cors@v1.2.2/mod.ts",
-    "uuid": "https://deno.land/std@0.220.0/uuid/mod.ts"
+    "uuid": "https://deno.land/std@0.220.0/uuid/mod.ts",
+    "drizzle-orm": "npm:drizzle-orm@^0.30.10",
+    "drizzle-orm/": "npm:drizzle-orm@^0.30.10/",
+    "drizzle-kit": "npm:drizzle-kit@^0.21.2",
+    "postgres-js": "npm:postgres@^3.4.4"
   },
   "compilerOptions": {
     "strict": true,
-    "lib": ["deno.window", "deno.unstable"],
-    "exactOptionalPropertyTypes": true,
-    "noImplicitReturns": true,
+    "lib": [
+      "deno.window",
+      "deno.unstable"
+    ],
+    "exactOptionalPropertyTypes": false,
+    "noImplicitReturns": false,
     "noUncheckedIndexedAccess": true
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"]
-    }
+      "tags": [
+        "recommended"
+      ]
+    },
+    "exclude": [
+      ".nuxt/",
+      ".nuxt-docker/",
+      ".output/",
+      "node_modules/",
+      "src/presentation-nuxt/.nuxt/",
+      "src/presentation-nuxt/.nuxt-docker/",
+      "src/presentation-nuxt/.output/",
+      "src/presentation-nuxt/node_modules/"
+    ]
   },
   "fmt": {
     "indentWidth": 2,
